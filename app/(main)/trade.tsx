@@ -21,7 +21,8 @@ import {
 import { TokenIcon } from '@/components/TokenIcon';
 import { TokenPickerModal } from '@/components/TokenPickerModal';
 import { Button, Card, PressScale } from '@/components/ui';
-import { formatAmount, formatPrice, formatUsd, parseAmount } from '@/lib/format';
+import { formatAmount, formatPrice, parseAmount } from '@/lib/format';
+import { useMoney } from '@/store/money';
 import { usePortfolio } from '@/store/portfolio';
 import { useRefreshPrices } from '@/store/prices';
 import { useWallet } from '@/store/wallet';
@@ -31,6 +32,7 @@ import { colors, radius, spacing, type } from '@/theme';
 const SPREAD = 0.004;
 
 export default function Swap() {
+  const money = useMoney();
   const tokens = useWallet((s) => s.tokens);
   const swap = useWallet((s) => s.swap);
   const { rows } = usePortfolio(true);
@@ -128,7 +130,7 @@ export default function Swap() {
                 <Shortcut label="50%" onPress={() => setPercent(0.5)} />
                 <Shortcut label="MAX" onPress={() => setPercent(1)} />
               </View>
-              <Text style={type.caption}>{formatUsd(usdValue)}</Text>
+              <Text style={type.caption}>{money(usdValue)}</Text>
             </View>
           </Card>
 
@@ -170,7 +172,7 @@ export default function Swap() {
                 {toRow ? formatPrice(toRow.price) : ''}
               </Text>
               <Text style={type.caption}>
-                {formatUsd(received * (toRow?.price ?? 0))}
+                {money(received * (toRow?.price ?? 0))}
               </Text>
             </View>
           </Card>
@@ -228,7 +230,7 @@ export default function Swap() {
                 <Text style={[type.body, styles.legAmount]}>
                   {formatAmount(amount)} {fromRow?.token.symbol}
                 </Text>
-                <Text style={type.small}>{formatUsd(usdValue)}</Text>
+                <Text style={type.small}>{money(usdValue)}</Text>
               </View>
 
               <Ionicons name="arrow-forward" size={20} color={colors.textTertiary} />
@@ -238,7 +240,7 @@ export default function Swap() {
                 <Text style={[type.body, styles.legAmount]}>
                   {formatAmount(received)} {toRow?.token.symbol}
                 </Text>
-                <Text style={type.small}>{formatUsd(received * (toRow?.price ?? 0))}</Text>
+                <Text style={type.small}>{money(received * (toRow?.price ?? 0))}</Text>
               </View>
             </View>
 

@@ -6,11 +6,13 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { TokenIcon } from '@/components/TokenIcon';
 import { Card, ListRow, Screen, Separator } from '@/components/ui';
-import { formatAmount, formatUsd } from '@/lib/format';
+import { formatAmount } from '@/lib/format';
+import { useMoney } from '@/store/money';
 import { usePortfolio } from '@/store/portfolio';
 import { colors, radius, spacing, type } from '@/theme';
 
 export default function SendPicker() {
+  const money = useMoney();
   const router = useRouter();
   const { rows } = usePortfolio(true);
   const [query, setQuery] = useState('');
@@ -51,7 +53,7 @@ export default function SendPicker() {
                 left={<TokenIcon token={row.token} />}
                 title={row.token.name}
                 subtitle={`${formatAmount(row.balance)} ${row.token.symbol}`}
-                rightTitle={formatUsd(row.usdValue)}
+                rightTitle={money(row.usdValue)}
                 chevron
                 onPress={() => router.push(`/send/${row.token.id}`)}
               />

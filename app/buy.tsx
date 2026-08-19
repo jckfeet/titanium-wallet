@@ -18,7 +18,8 @@ import {
 import { TokenIcon } from '@/components/TokenIcon';
 import { TokenPickerModal } from '@/components/TokenPickerModal';
 import { Button, Card, PressScale, Screen } from '@/components/ui';
-import { formatAmount, formatPrice, formatUsd, parseAmount } from '@/lib/format';
+import { formatAmount, formatPrice, parseAmount } from '@/lib/format';
+import { useMoney } from '@/store/money';
 import { usePortfolio } from '@/store/portfolio';
 import { useWallet } from '@/store/wallet';
 import { colors, radius, spacing, type } from '@/theme';
@@ -26,6 +27,7 @@ import { colors, radius, spacing, type } from '@/theme';
 const PRESETS = [25, 50, 100, 250];
 
 export default function Buy() {
+  const money = useMoney();
   const router = useRouter();
   const buy = useWallet((s) => s.buy);
   const { rows } = usePortfolio(true);
@@ -115,7 +117,7 @@ export default function Buy() {
           </Card>
 
           <Button
-            label={canBuy ? `Buy ${formatUsd(usd)} of ${row.token.symbol}` : 'Enter an amount'}
+            label={canBuy ? `Buy ${money(usd)} of ${row.token.symbol}` : 'Enter an amount'}
             disabled={!canBuy}
             style={styles.buyButton}
             onPress={confirm}

@@ -31,7 +31,8 @@ import {
   Separator,
 } from '@/components/ui';
 import { CUSTOM_TOKEN_COLORS } from '@/data/tokens';
-import { formatUsd, parseAmount } from '@/lib/format';
+import { parseAmount } from '@/lib/format';
+import { useMoney } from '@/store/money';
 import { usePortfolio } from '@/store/portfolio';
 import { useWallet } from '@/store/wallet';
 import { colors, radius, spacing, type } from '@/theme';
@@ -232,6 +233,7 @@ function BalanceEditor({
   onChange: (value: number) => void;
   onRemove?: () => void;
 }) {
+  const money = useMoney();
   // Uncontrolled so typing "1." or a trailing zero is not fought by the parser
   // on every keystroke.
   return (
@@ -240,7 +242,7 @@ function BalanceEditor({
       <View style={styles.balanceText}>
         <Text style={type.body}>{symbol}</Text>
         <Text style={[type.small, styles.balanceSub]} numberOfLines={1}>
-          {name} · {formatUsd(usd)}
+          {name} · {money(usd)}
         </Text>
       </View>
       <TextInput

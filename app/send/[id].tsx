@@ -29,18 +29,22 @@ import Animated, {
 import { TokenIcon } from '@/components/TokenIcon';
 import { Button, Card, PressScale, Screen } from '@/components/ui';
 import { fakeSolanaAddress } from '@/lib/base58';
-import { formatAmount, formatUsd, parseAmount, truncateMiddle } from '@/lib/format';
+import { formatAmount, parseAmount, truncateMiddle } from '@/lib/format';
+import { useMoney } from '@/store/money';
+import { useSettings } from '@/store/settings';
 import { useHolding } from '@/store/portfolio';
 import { useWallet } from '@/store/wallet';
 import { colors, radius, spacing, type } from '@/theme';
 
 export default function SendCompose() {
+  const money = useMoney();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const holding = useHolding(id);
   const send = useWallet((s) => s.send);
 
   const [address, setAddress] = useState('');
+  const addressBook = useSettings((s) => s.addressBook);
   const [amountText, setAmountText] = useState('');
   const [reviewing, setReviewing] = useState(false);
   const [sent, setSent] = useState(false);
@@ -113,6 +117,23 @@ export default function SendCompose() {
             </View>
           </Card>
 
+          {addressBook.length > 0 ? (
+            <View style={styles.savedRow}>
+              {addressBook.map((entry) => (
+                <PressScale
+                  key={entry.id}
+                  onPress={() => setAddress(entry.address)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Send to ${entry.label}`}
+                  style={styles.savedChip}
+                >
+                  <Ionicons name="bookmark-outline" size={13} color={colors.accent} />
+                  <Text style={[type.small, styles.savedChipText]}>{entry.label}</Text>
+                </PressScale>
+              ))}
+            </View>
+          ) : null}
+
           <Text style={[type.caption, styles.label]}>Amount</Text>
           <Card style={styles.inputCard}>
             <View style={styles.amountRow}>
@@ -129,7 +150,7 @@ export default function SendCompose() {
             </View>
 
             <View style={styles.amountFoot}>
-              <Text style={type.caption}>{formatUsd(usdValue)}</Text>
+              <Text style={type.caption}>{money(usdValue)}</Text>
               <View style={styles.shortcuts}>
                 <PressScale style={styles.shortcut} onPress={() => setPercent(0.5)}>
                   <Text style={styles.shortcutLabel}>50%</Text>
@@ -178,7 +199,7 @@ export default function SendCompose() {
               <Text style={[type.display, styles.reviewAmount]}>
                 {formatAmount(amount)} {token.symbol}
               </Text>
-              <Text style={type.caption}>{formatUsd(usdValue)}</Text>
+              <Text style={type.caption}>{money(usdValue)}</Text>
             </View>
 
             <SummaryRow label="To" value={truncateMiddle(address.trim(), 8, 8)} />
@@ -296,6 +317,24 @@ const styles = StyleSheet.create({
     marginHorizontal: spacing.lg,
     padding: spacing.lg,
     gap: spacing.md,
+  },
+  savedRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+    marginTop: spacing.md,
+  },
+  savedChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: radius.pill,
+    backgroundColor: colors.surfaceHigh,
+  },
+  savedChipText: {
+    color: colors.accent,
   },
   addressInput: {
     color: colors.text,

@@ -55,7 +55,32 @@ export interface ActivityItem {
   toAmount?: number;
 }
 
+/** One wallet account. Each carries its own addresses, holdings and history. */
+export interface Account {
+  id: string;
+  name: string;
+  /** Display handle shown next to the avatar, e.g. `@quietfox`. */
+  handle: string;
+  /** Avatar colour, derived once at creation. */
+  color: string;
+  /** Seed string the account's addresses are generated from. */
+  seed: string;
+}
+
+/** The per-account slice that is swapped in and out on account switch. */
+export interface AccountData {
+  addresses: Record<NetworkId, string>;
+  balances: Record<string, number>;
+  activity: ActivityItem[];
+  cashBalance: number;
+}
+
 export interface WalletState {
+  accounts: Account[];
+  activeAccountId: string;
+  /** Parked data for every account that is not currently active. */
+  accountData: Record<string, AccountData>;
+
   /** False until the onboarding flow completes. */
   onboarded: boolean;
   /** Cosmetic 12-word phrase shown during onboarding. Never used as a key. */
@@ -73,6 +98,11 @@ export interface WalletState {
   hideBalances: boolean;
   /** True once AsyncStorage has rehydrated, gating the first navigation. */
   hydrated: boolean;
+
+  addAccount: (name?: string) => Account;
+  switchAccount: (accountId: string) => void;
+  renameAccount: (accountId: string, name: string) => void;
+  removeAccount: (accountId: string) => void;
 
   createWallet: () => void;
   regenerateSeedPhrase: () => void;
@@ -102,6 +132,30 @@ export function generateSeedPhrase(): string[] {
     words.push(BIP39_WORDLIST[Math.floor(Math.random() * BIP39_WORDLIST.length)]);
   }
   return words;
+}
+
+const HANDLE_ADJECTIVES = [
+  'quiet', 'amber', 'north', 'violet', 'swift', 'lunar', 'cobalt', 'ember',
+  'solar', 'hollow', 'copper', 'silent',
+];
+const HANDLE_NOUNS = [
+  'fox', 'harbor', 'pine', 'atlas', 'river', 'orbit', 'cedar', 'falcon',
+  'quartz', 'meadow', 'anchor', 'comet',
+];
+const AVATAR_COLORS = [
+  '#AB9FF2', '#5AC8FA', '#21C577', '#F5A623', '#FC6B6B', '#B57BFF',
+];
+
+/** `@quietfox` style handle, derived from the account seed so it is stable. */
+export function generateHandle(seed: string): string {
+  const rng = makeRng(`handle-${seed}`);
+  const adjective = rngPick(rng, HANDLE_ADJECTIVES);
+  const noun = rngPick(rng, HANDLE_NOUNS);
+  return `@${adjective}${noun}`;
+}
+
+function avatarColor(seed: string): string {
+  return rngPick(makeRng(`avatar-${seed}`), AVATAR_COLORS);
 }
 
 function generateAddresses(seed: string): Record<NetworkId, string> {
@@ -178,7 +232,18 @@ function seedActivity(seed: string, now = Date.now()): ActivityItem[] {
 
 /** Factory demo data, used on first launch and by "Reset all data". */
 function factoryState(seed = randomId()) {
+  const firstAccount: Account = {
+    id: seed,
+    name: 'Account 1',
+    handle: generateHandle(seed),
+    color: avatarColor(seed),
+    seed,
+  };
+
   return {
+    accounts: [firstAccount],
+    activeAccountId: firstAccount.id,
+    accountData: {} as Record<string, AccountData>,
     onboarded: false,
     seedPhrase: generateSeedPhrase(),
     addresses: generateAddresses(seed),
@@ -188,6 +253,16 @@ function factoryState(seed = randomId()) {
     activity: seedActivity(seed),
     cashBalance: 10_000,
     hideBalances: false,
+  };
+}
+
+/** Snapshots the live per-account fields, for parking on account switch. */
+function snapshot(state: WalletState): AccountData {
+  return {
+    addresses: state.addresses,
+    balances: state.balances,
+    activity: state.activity,
+    cashBalance: state.cashBalance,
   };
 }
 
@@ -248,6 +323,92 @@ export const useWallet = create<WalletState>()(
             ? state.hiddenTokens.filter((id) => id !== tokenId)
             : [...state.hiddenTokens, tokenId],
         })),
+
+      addAccount: (name) => {
+        const seed = randomId();
+        const account: Account = {
+          id: seed,
+          name: name?.trim() || `Account ${get().accounts.length + 1}`,
+          handle: generateHandle(seed),
+          color: avatarColor(seed),
+          seed,
+        };
+
+        set((state) => ({
+          accounts: [...state.accounts, account],
+          // A new account starts empty - fresh addresses, no holdings, no history.
+          accountData: {
+            ...state.accountData,
+            [account.id]: {
+              addresses: generateAddresses(seed),
+              balances: {},
+              activity: [],
+              cashBalance: 0,
+            },
+          },
+        }));
+
+        return account;
+      },
+
+      switchAccount: (accountId) =>
+        set((state) => {
+          if (accountId === state.activeAccountId) return {};
+          const target = state.accountData[accountId];
+          if (!target) return {};
+
+          // Park the outgoing account's data, load the incoming account's.
+          return {
+            accountData: {
+              ...state.accountData,
+              [state.activeAccountId]: snapshot(state),
+            },
+            activeAccountId: accountId,
+            addresses: target.addresses,
+            balances: target.balances,
+            activity: target.activity,
+            cashBalance: target.cashBalance,
+          };
+        }),
+
+      renameAccount: (accountId, name) =>
+        set((state) => ({
+          accounts: state.accounts.map((a) =>
+            a.id === accountId ? { ...a, name: name.trim() || a.name } : a,
+          ),
+        })),
+
+      removeAccount: (accountId) =>
+        set((state) => {
+          // The last account cannot be removed - there would be nothing to show.
+          if (state.accounts.length <= 1) return {};
+
+          const remaining = state.accounts.filter((a) => a.id !== accountId);
+          const accountData = { ...state.accountData };
+          delete accountData[accountId];
+
+          if (accountId !== state.activeAccountId) {
+            return { accounts: remaining, accountData };
+          }
+
+          // Removing the active account falls through to the first survivor.
+          const next = remaining[0];
+          const data = accountData[next.id] ?? {
+            addresses: generateAddresses(next.seed),
+            balances: {},
+            activity: [],
+            cashBalance: 0,
+          };
+          return {
+            accounts: remaining,
+            accountData,
+            activeAccountId: next.id,
+            addresses: data.addresses,
+            balances: data.balances,
+            activity: data.activity,
+            cashBalance: data.cashBalance,
+          };
+        }),
 
       setCashBalance: (value) => set({ cashBalance: Math.max(0, value) }),
 
@@ -321,6 +482,9 @@ export const useWallet = create<WalletState>()(
       },
     }),
     {
+      // Deliberately still v3: the account fields are additive, and zustand's
+      // shallow merge fills them from initial state while persisted balances,
+      // addresses and history survive. Bumping here would wipe every install.
       name: 'titanium-wallet-v3',
       storage: createJSONStorage(() => AsyncStorage),
       partialize: ({ hydrated: _hydrated, ...rest }) => rest,

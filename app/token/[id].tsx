@@ -22,12 +22,14 @@ import {
   Separator,
 } from '@/components/ui';
 import { buildSeries, formatSeriesTime, Timeframe, TIMEFRAMES } from '@/lib/chart';
-import { formatAmount, formatPercent, formatPrice, formatUsd } from '@/lib/format';
+import { formatAmount, formatPercent, formatPrice } from '@/lib/format';
+import { useMoney } from '@/store/money';
 import { useHolding } from '@/store/portfolio';
 import { useWallet } from '@/store/wallet';
 import { colors, radius, spacing, type } from '@/theme';
 
 export default function TokenDetail() {
+  const money = useMoney();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const holding = useHolding(id);
@@ -143,7 +145,7 @@ export default function TokenDetail() {
         <Card style={styles.card}>
           <View style={styles.holdings}>
             <View>
-              <Text style={type.display}>{formatUsd(holding.usdValue)}</Text>
+              <Text style={type.display}>{money(holding.usdValue)}</Text>
               <Text style={[type.caption, styles.holdingsSub]}>
                 {formatAmount(holding.balance)} {token.symbol}
               </Text>

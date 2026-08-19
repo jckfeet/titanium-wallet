@@ -12,6 +12,7 @@ import QRCode from 'react-native-qrcode-svg';
 
 import { Button, Card, PressScale, Screen, Separator } from '@/components/ui';
 import { TokenIcon } from '@/components/TokenIcon';
+import { useSettings } from '@/store/settings';
 import { NetworkId, NETWORKS, useWallet } from '@/store/wallet';
 import { colors, radius, spacing, type } from '@/theme';
 
@@ -20,7 +21,12 @@ export default function Receive() {
   const [network, setNetwork] = useState<NetworkId>('solana');
   const [copied, setCopied] = useState(false);
 
-  const active = NETWORKS.find((n) => n.id === network) ?? NETWORKS[0];
+  const disabledNetworks = useSettings((s) => s.disabledNetworks);
+  // Only networks left switched on in Settings > Active Networks are offered.
+  const available = NETWORKS.filter((n) => !disabledNetworks.includes(n.id));
+  const shown = available.length > 0 ? available : NETWORKS;
+
+  const active = shown.find((n) => n.id === network) ?? shown[0];
   const address = addresses[network];
 
   const handleCopy = async () => {
@@ -43,7 +49,7 @@ export default function Receive() {
     <Screen edges={['bottom']}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <Card style={styles.networkCard}>
-          {NETWORKS.map((item, index) => {
+          {shown.map((item, index) => {
             const selected = item.id === network;
             return (
               <View key={item.id}>

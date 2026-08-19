@@ -11,11 +11,13 @@ import { Modal, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { ActivityRow } from '@/components/ActivityRow';
 import { Button, Card, Screen, SectionHeader, Separator } from '@/components/ui';
-import { dayLabel, formatAmount, formatUsd } from '@/lib/format';
+import { dayLabel, formatAmount } from '@/lib/format';
+import { useMoney } from '@/store/money';
 import { ActivityItem, useWallet } from '@/store/wallet';
 import { colors, radius, spacing, type } from '@/theme';
 
 export default function Activity() {
+  const money = useMoney();
   const activity = useWallet((s) => s.activity);
   const tokens = useWallet((s) => s.tokens);
   const [selected, setSelected] = useState<ActivityItem | null>(null);
@@ -98,7 +100,7 @@ Sends, swaps and purchases will show up here.
                     value={`${formatAmount(selected.toAmount ?? 0)} ${selectedToToken.symbol}`}
                   />
                 ) : null}
-                <DetailRow label="Value" value={formatUsd(selected.usdValue)} />
+                <DetailRow label="Value" value={money(selected.usdValue)} />
                 {selected.address ? (
                   <DetailRow label="Address" value={selected.address} mono />
                 ) : null}

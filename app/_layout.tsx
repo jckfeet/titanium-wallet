@@ -11,6 +11,7 @@ import React, { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { LockGate } from '@/components/LockGate';
 import { useWallet } from '@/store/wallet';
 import { colors, type } from '@/theme';
 
@@ -57,6 +58,13 @@ export default function RootLayout() {
           <Stack.Screen name="buy" options={{ title: 'Buy', presentation: 'modal' }} />
           <Stack.Screen name="settings" options={{ title: 'Settings', presentation: 'modal' }} />
           <Stack.Screen name="balances" options={{ title: 'Balances' }} />
+          <Stack.Screen name="accounts" options={{ title: 'Manage Accounts' }} />
+          <Stack.Screen name="preferences" options={{ title: 'Preferences' }} />
+          <Stack.Screen name="security" options={{ title: 'Security & Privacy' }} />
+          <Stack.Screen name="networks" options={{ title: 'Active Networks' }} />
+          <Stack.Screen name="address-book" options={{ title: 'Address Book' }} />
+          <Stack.Screen name="connected-apps" options={{ title: 'Connected Apps' }} />
+          <Stack.Screen name="recovery-phrase" options={{ title: 'Recovery Phrase' }} />
           <Stack.Screen
             name="search"
             options={{ title: 'Search', presentation: 'modal' }}
@@ -66,6 +74,9 @@ export default function RootLayout() {
             options={{ title: 'Manage token list', presentation: 'modal' }}
           />
         </Stack>
+
+        {/* Sits above the navigator so unlocking restores the exact screen. */}
+        <LockGate />
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

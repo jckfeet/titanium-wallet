@@ -5,12 +5,14 @@ import { useRouter } from 'expo-router';
 
 import { TokenIcon } from '@/components/TokenIcon';
 import { Button, Card, Screen, SectionHeader, Separator } from '@/components/ui';
-import { formatAmount, formatUsd } from '@/lib/format';
+import { formatAmount } from '@/lib/format';
+import { useMoney } from '@/store/money';
 import { usePortfolio } from '@/store/portfolio';
 import { useWallet } from '@/store/wallet';
 import { colors, spacing, type } from '@/theme';
 
 export default function ManageTokens() {
+  const money = useMoney();
   const router = useRouter();
   const { rows } = usePortfolio(true);
   const hidden = useWallet((s) => s.hiddenTokens);
@@ -36,7 +38,7 @@ export default function ManageTokens() {
                   <View style={styles.rowText}>
                     <Text style={type.body}>{row.token.name}</Text>
                     <Text style={[type.caption, styles.rowSub]} numberOfLines={1}>
-                      {formatAmount(row.balance)} {row.token.symbol} · {formatUsd(row.usdValue)}
+                      {formatAmount(row.balance)} {row.token.symbol} · {money(row.usdValue)}
                     </Text>
                   </View>
                   <Switch

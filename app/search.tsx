@@ -9,16 +9,18 @@ import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import { Keyboard, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
+import { useMoney } from '@/store/money';
 import { TokenIcon } from '@/components/TokenIcon';
 import { Card, ListRow, Screen, SectionHeader, Separator } from '@/components/ui';
 import { ALL_DAPPS } from '@/data/dapps';
-import { formatUsd, maskIf } from '@/lib/format';
+
 import { search } from '@/lib/search';
 import { usePortfolio } from '@/store/portfolio';
 import { useWallet } from '@/store/wallet';
 import { colors, radius, spacing, type } from '@/theme';
 
 export default function Search() {
+  const money = useMoney();
   const router = useRouter();
   const [query, setQuery] = useState('');
   const { rows } = usePortfolio(true);
@@ -90,7 +92,7 @@ export default function Search() {
                     left={<TokenIcon token={row.token} />}
                     title={row.token.name}
                     subtitle={row.token.symbol}
-                    rightTitle={maskIf(hideBalances, formatUsd(row.usdValue))}
+                    rightTitle={money(row.usdValue)}
                     chevron
                     onPress={() => router.push(`/token/${row.token.id}`)}
                   />

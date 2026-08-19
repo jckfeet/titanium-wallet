@@ -41,7 +41,13 @@
           "backgroundColor": "#000000"
         }
       ],
-      "expo-font"
+      "expo-font",
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Allow Photon to unlock with Face ID."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": false

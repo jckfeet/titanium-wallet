@@ -4,7 +4,8 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { Token } from '@/data/tokens';
-import { formatAmount, formatUsd, timeAgo, truncateMiddle } from '@/lib/format';
+import { formatAmount, timeAgo, truncateMiddle } from '@/lib/format';
+import { useMoney } from '@/store/money';
 import { ActivityItem } from '@/store/wallet';
 import { colors, radius, spacing, type } from '@/theme';
 import { PressScale } from './ui';
@@ -27,6 +28,7 @@ interface ActivityRowProps {
 }
 
 export function ActivityRow({ item, token, toToken, onPress }: ActivityRowProps) {
+  const money = useMoney();
   const meta = TYPE_META[item.type];
   const symbol = token?.symbol ?? 'Token';
 
@@ -79,7 +81,7 @@ export function ActivityRow({ item, token, toToken, onPress }: ActivityRowProps)
               {formatAmount(item.amount)} {symbol}
             </Text>
             <Text style={[type.small, styles.subtitle]} numberOfLines={1}>
-              {formatUsd(item.usdValue)}
+              {money(item.usdValue)}
             </Text>
           </>
         )}

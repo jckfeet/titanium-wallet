@@ -5,6 +5,7 @@ import {
   formatAmount,
   formatPercent,
   formatPrice,
+  formatMoney,
   formatUsd,
   parseAmount,
   timeAgo,
@@ -133,5 +134,38 @@ describe('maskIf', () => {
 
   it('masks every figure identically, so amounts cannot be inferred by width', () => {
     expect(maskIf(true, '$1.00')).toBe(maskIf(true, '$9,999,999.00'));
+  });
+});
+
+describe('formatMoney', () => {
+  const usd = { symbol: '$', perUsd: 1, decimals: 2 };
+  const eur = { symbol: '€', perUsd: 0.92, decimals: 2 };
+  const jpy = { symbol: '¥', perUsd: 157, decimals: 0 };
+
+  it('matches formatUsd for dollars', () => {
+    expect(formatMoney(1234.5, usd)).toBe('$1,234.50');
+  });
+
+  it('converts at the currency rate', () => {
+    expect(formatMoney(100, eur)).toBe('€92.00');
+  });
+
+  it('honours zero-decimal currencies', () => {
+    expect(formatMoney(10, jpy)).toBe('¥1,570');
+  });
+
+  it('puts the minus outside the symbol', () => {
+    expect(formatMoney(-42, usd)).toBe('-$42.00');
+  });
+
+  it('compacts millions in the converted value, not the USD value', () => {
+    // $2m is ¥314m, so both compact; $10k is ¥1.57m, so only the yen figure does.
+    expect(formatMoney(10_000, jpy, { compact: true })).toBe('¥1.57M');
+    expect(formatMoney(10_000, usd, { compact: true })).toBe('$10,000.00');
+  });
+
+  it('survives non-finite input', () => {
+    expect(formatMoney(NaN, usd)).toBe('$0.00');
+    expect(formatMoney(Infinity, jpy)).toBe('¥0');
   });
 });

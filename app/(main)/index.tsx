@@ -11,10 +11,12 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { Modal, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { TokenIcon } from '@/components/TokenIcon';
-import { Card, PressScale, Separator } from '@/components/ui';
+import { Button, Card, PressScale, Separator } from '@/components/ui';
 import { buildPortfolioSeries, TIMEFRAMES, type Timeframe } from '@/lib/chart';
-import { formatAmount, formatUsd, maskIf } from '@/lib/format';
+import { formatAmount, MASKED } from '@/lib/format';
+import { useMoney } from '@/store/money';
 import { PriceChart } from '@/components/PriceChart';
+import { EmptyStateArt } from '@/components/EmptyStateArt';
 import { HoldingRow, usePortfolio } from '@/store/portfolio';
 import { usePriceStore, useRefreshPrices } from '@/store/prices';
 import { useWallet } from '@/store/wallet';
@@ -25,6 +27,7 @@ const SECRET_TAP_COUNT = 5;
 const SECRET_TAP_WINDOW_MS = 3000;
 
 export default function Home() {
+  const money = useMoney();
   const router = useRouter();
   const tokens = useWallet((s) => s.tokens);
   const cashBalance = useWallet((s) => s.cashBalance);
@@ -72,6 +75,14 @@ export default function Home() {
     [rows, timeframe, cashBalance],
   );
 
+  const accounts = useWallet((s) => s.accounts);
+  const activeAccountId = useWallet((s) => s.activeAccountId);
+  const activeAccount = accounts.find((a) => a.id === activeAccountId) ?? accounts[0];
+
+  // A brand-new account holds nothing at all; show the welcome card rather
+  // than a portfolio of zeroes and a flat chart.
+  const isEmpty = totalUsd === 0 && cashBalance === 0;
+
   const { cryptoRows, stockRows } = useMemo(
     () => ({
       cryptoRows: rows.filter((r) => r.token.kind !== 'stock'),
@@ -97,10 +108,29 @@ export default function Home() {
           onPress={() => setAccountOpen(true)}
           style={styles.accountRow}
         >
-          <Text style={[type.body, styles.accountLabel]}>Account 1</Text>
+          <Text style={[type.body, styles.accountLabel]}>{activeAccount?.name ?? 'Account 1'}</Text>
           <Ionicons name="chevron-down" size={16} color={colors.textSecondary} />
         </PressScale>
 
+        {isEmpty ? (
+          <View style={styles.welcomeCard}>
+            <EmptyStateArt size={132} />
+            <Text style={[type.title, styles.welcomeTitle]}>
+              Welcome, {activeAccount?.handle ?? '@photon'}
+            </Text>
+            <Text style={[type.caption, styles.welcomeBlurb]}>
+              Add Solana (SOL) to this account to get started.
+            </Text>
+            <Button label="Buy SOL with cash" onPress={() => router.push('/buy')} style={styles.welcomePrimary} />
+            <Button
+              label="Transfer crypto"
+              variant="secondary"
+              onPress={() => router.push('/receive')}
+              style={styles.welcomeSecondary}
+            />
+          </View>
+        ) : (
+        <>
         <PressScale
           onPress={handleBalanceTap}
           scaleTo={0.985}
@@ -108,7 +138,7 @@ export default function Home() {
           style={styles.balanceBlock}
         >
           <View style={styles.balanceRow}>
-            <Text style={styles.balance}>{maskIf(hideBalances, formatUsd(totalUsd))}</Text>
+            <Text style={styles.balance}>{money(totalUsd)}</Text>
             <PressScale
               onPress={() => setHideBalances(!hideBalances)}
               scaleTo={0.9}
@@ -125,7 +155,7 @@ export default function Home() {
           </View>
           <View style={styles.changeRow}>
             <Text style={[styles.changeAmount, { color: positive ? colors.positive : colors.negative }]}>
-              {maskIf(hideBalances, `${positive ? '+' : '-'}${formatUsd(Math.abs(change24hUsd))}`)}
+              {hideBalances ? MASKED : `${positive ? '+' : '-'}${money(Math.abs(change24hUsd))}`}
             </Text>
             <View
               style={[
@@ -180,7 +210,7 @@ export default function Home() {
                 <Ionicons name="cash-outline" size={20} color={colors.text} />
               </View>
               <Text style={[type.body, styles.cashLabel]}>Cash</Text>
-              <Text style={type.body}>{maskIf(hideBalances, formatUsd(cashBalance))}</Text>
+              <Text style={type.body}>{money(cashBalance)}</Text>
             </View>
           </PressScale>
         </Card>
@@ -206,6 +236,8 @@ export default function Home() {
             <Text style={type.caption}>Every asset is hidden. Manage the list from Settings.</Text>
           </View>
         ) : null}
+        </>
+        )}
 
       </ScrollView>
 
@@ -226,6 +258,7 @@ function AssetSection({
   onHeaderPress: () => void;
   onRowPress: (id: string) => void;
 }) {
+  const money = useMoney();
   if (rows.length === 0) return null;
 
   return (
@@ -257,7 +290,7 @@ function AssetSection({
 
                   <View style={styles.assetRight}>
                     <Text style={type.body} numberOfLines={1}>
-                      {formatUsd(row.usdValue)}
+                      {money(row.usdValue)}
                     </Text>
                     <Text
                       style={[
@@ -268,8 +301,8 @@ function AssetSection({
                       numberOfLines={1}
                     >
                       {zero
-                        ? formatUsd(0)
-                        : `${up ? '+' : '-'}${formatUsd(Math.abs((row.usdValue * row.change24h) / 100))}`}
+                        ? money(0)
+                        : `${up ? '+' : '-'}${money(Math.abs((row.usdValue * row.change24h) / 100))}`}
                     </Text>
                   </View>
                 </View>
@@ -345,6 +378,31 @@ const styles = StyleSheet.create({
   accountLabel: {
     color: colors.textSecondary,
     fontWeight: '500',
+  },
+  welcomeCard: {
+    alignItems: 'center',
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.lg,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.xxl,
+    borderRadius: radius.xl,
+    backgroundColor: colors.surface,
+  },
+  welcomeTitle: {
+    marginTop: spacing.lg,
+    textAlign: 'center',
+  },
+  welcomeBlurb: {
+    marginTop: spacing.sm,
+    textAlign: 'center',
+  },
+  welcomePrimary: {
+    alignSelf: 'stretch',
+    marginTop: spacing.xl,
+  },
+  welcomeSecondary: {
+    alignSelf: 'stretch',
+    marginTop: spacing.md,
   },
   timeframes: {
     flexDirection: 'row',

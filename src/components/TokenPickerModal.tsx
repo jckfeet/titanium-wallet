@@ -3,7 +3,8 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useMemo, useState } from 'react';
 import { Modal, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { formatAmount, formatUsd } from '@/lib/format';
+import { formatAmount } from '@/lib/format';
+import { useMoney } from '@/store/money';
 import { usePortfolio } from '@/store/portfolio';
 import { colors, radius, spacing, type } from '@/theme';
 import { TokenIcon } from './TokenIcon';
@@ -25,6 +26,7 @@ export function TokenPickerModal({
   onSelect,
   onClose,
 }: TokenPickerModalProps) {
+  const money = useMoney();
   const { rows } = usePortfolio(true);
   const [query, setQuery] = useState('');
 
@@ -78,7 +80,7 @@ export function TokenPickerModal({
                   left={<TokenIcon token={row.token} />}
                   title={row.token.name}
                   subtitle={`${formatAmount(row.balance)} ${row.token.symbol}`}
-                  rightTitle={formatUsd(row.usdValue)}
+                  rightTitle={money(row.usdValue)}
                   onPress={() => {
                     onSelect(row.token.id);
                     setQuery('');

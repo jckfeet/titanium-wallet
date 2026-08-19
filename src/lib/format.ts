@@ -11,6 +11,33 @@ export function maskIf(hidden: boolean, text: string): string {
   return hidden ? MASKED : text;
 }
 
+/**
+ * Converts a USD figure into the selected display currency and formats it.
+ *
+ * Prices and balances are held in USD everywhere; only presentation converts,
+ * so switching currency never mutates stored data.
+ */
+export function formatMoney(
+  usd: number,
+  currency: { symbol: string; perUsd: number; decimals: number },
+  opts?: { compact?: boolean },
+): string {
+  if (!isFinite(usd)) return `${currency.symbol}0${currency.decimals ? '.00' : ''}`;
+
+  const value = usd * currency.perUsd;
+
+  if (opts?.compact && Math.abs(value) >= 1_000_000) {
+    return `${currency.symbol}${(value / 1_000_000).toFixed(2)}M`;
+  }
+
+  const body = Math.abs(value).toLocaleString('en-US', {
+    minimumFractionDigits: currency.decimals,
+    maximumFractionDigits: currency.decimals,
+  });
+
+  return `${value < 0 ? '-' : ''}${currency.symbol}${body}`;
+}
+
 /** `$1,234.56` - the standard USD figure used in lists and headers. */
 export function formatUsd(value: number, opts?: { compact?: boolean }): string {
   if (!isFinite(value)) return '$0.00';
