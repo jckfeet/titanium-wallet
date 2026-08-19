@@ -1,14 +1,14 @@
 /**
  * Titanium design language.
  *
- * Near-black canvas, slightly-lifted card surfaces, hairline separators and a
+ * Pure-black canvas, lifted card surfaces, hairline separators and a
  * violet accent family. All original values - no third-party brand assets.
  */
 import { Platform, TextStyle } from 'react-native';
 
 export const colors = {
   /** App canvas. */
-  bg: '#131313',
+  bg: '#000000',
   /** Raised surfaces: cards, list groups, sheets. */
   surface: '#1C1C24',
   /** A step above `surface`, for controls sitting on a card. */

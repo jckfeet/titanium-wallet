@@ -7,7 +7,7 @@
     "icon": "./assets/icon.png",
     "scheme": "titanium",
     "userInterfaceStyle": "dark",
-    "backgroundColor": "#131313",
+    "backgroundColor": "#000000",
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.titaniumwallet.demo",
@@ -20,7 +20,7 @@
     "android": {
       "package": "com.titaniumwallet.demo",
       "adaptiveIcon": {
-        "backgroundColor": "#131313",
+        "backgroundColor": "#000000",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
@@ -38,7 +38,7 @@
           "image": "./assets/splash-icon.png",
           "imageWidth": 180,
           "resizeMode": "contain",
-          "backgroundColor": "#131313"
+          "backgroundColor": "#000000"
         }
       ],
       "expo-font"
