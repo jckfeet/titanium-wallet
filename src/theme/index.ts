@@ -1,5 +1,5 @@
 /**
- * Titanium design language.
+ * Photon design language.
  *
  * Pure-black canvas, lifted card surfaces, hairline separators and a
  * violet accent family. All original values - no third-party brand assets.
@@ -38,11 +38,11 @@ export const colors = {
 } as const;
 
 export const radius = {
-  sm: 10,
-  md: 14,
-  lg: 16,
-  xl: 20,
-  xxl: 28,
+  sm: 8,
+  md: 12,
+  lg: 14,
+  xl: 16,
+  xxl: 20,
   pill: 999,
 } as const;
 
@@ -51,8 +51,8 @@ export const spacing = {
   sm: 8,
   md: 12,
   lg: 16,
-  xl: 20,
-  xxl: 28,
+  xl: 14,
+  xxl: 20,
   xxxl: 40,
 } as const;
 
@@ -71,7 +71,7 @@ export const type = {
     fontSize: 44,
     lineHeight: 52,
     fontWeight: '700',
-    letterSpacing: -1.2,
+    letterSpacing: -0.8,
     color: colors.text,
   } as TextStyle,
   /** Balance figures on token detail and review sheets. */

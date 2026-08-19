@@ -116,3 +116,49 @@ export function formatSeriesTime(timestamp: number, timeframe: Timeframe): strin
   }
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
+
+export interface PortfolioHolding {
+  /** Token id, used as the series seed so it matches the token detail chart. */
+  id: string;
+  balance: number;
+  price: number;
+  change24h: number;
+}
+
+/**
+ * Portfolio value over time.
+ *
+ * Rather than inventing an independent curve, this sums each holding's own
+ * series weighted by its balance - so the Home chart and the token detail
+ * charts always tell the same story. Cash is added as a flat line, since it
+ * does not move with the market.
+ */
+export function buildPortfolioSeries(
+  holdings: readonly PortfolioHolding[],
+  timeframe: Timeframe,
+  cashUsd = 0,
+  now = Date.now(),
+): PriceSeries {
+  const cfg = CONFIG[timeframe];
+  const points = new Array<number>(cfg.points).fill(cashUsd);
+
+  for (const holding of holdings) {
+    if (holding.balance <= 0 || holding.price <= 0) continue;
+    const series = buildSeries(holding.id, timeframe, holding.price, holding.change24h, now);
+    for (let i = 0; i < points.length; i++) {
+      points[i] += series.points[i] * holding.balance;
+    }
+  }
+
+  const timestamps: number[] = [];
+  const stepMs = cfg.spanMs / (cfg.points - 1);
+  for (let i = 0; i < cfg.points; i++) {
+    timestamps.push(now - cfg.spanMs + i * stepMs);
+  }
+
+  const min = Math.min(...points);
+  const max = Math.max(...points);
+  const changePct = points[0] > 0 ? ((points[points.length - 1] - points[0]) / points[0]) * 100 : 0;
+
+  return { points, timestamps, min, max, changePct };
+}

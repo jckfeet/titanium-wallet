@@ -18,7 +18,7 @@ export default function Welcome() {
           A crypto wallet interface you can explore safely
         </Text>
         <Text style={[type.caption, styles.blurb]}>
-          Titanium is a demo. It simulates balances, transfers and swaps so you can walk through a
+          Photon is a demo. It simulates balances, transfers and swaps so you can walk through a
           wallet without connecting to any network or risking real assets.
         </Text>
       </View>
@@ -30,7 +30,7 @@ export default function Welcome() {
           variant="secondary"
           onPress={() => router.push('/onboarding/create')}
         />
-        <DemoNotice style={styles.notice} />
+        <DemoNotice />
       </View>
     </Screen>
   );

@@ -20,14 +20,14 @@ import {
 
 import { TokenIcon } from '@/components/TokenIcon';
 import { TokenPickerModal } from '@/components/TokenPickerModal';
-import { Button, Card, DemoNotice, PressScale } from '@/components/ui';
+import { Button, Card, PressScale } from '@/components/ui';
 import { formatAmount, formatPrice, formatUsd, parseAmount } from '@/lib/format';
 import { usePortfolio } from '@/store/portfolio';
 import { useRefreshPrices } from '@/store/prices';
 import { useWallet } from '@/store/wallet';
 import { colors, radius, spacing, type } from '@/theme';
 
-/** Simulated price impact + fee applied to the destination leg. */
+/** Price impact + fee applied to the destination leg. */
 const SPREAD = 0.004;
 
 export default function Swap() {
@@ -133,7 +133,13 @@ export default function Swap() {
           </Card>
 
           <View style={styles.flipWrap}>
-            <PressScale onPress={flip} style={styles.flipButton} scaleTo={0.88}>
+            <PressScale
+              onPress={flip}
+              accessibilityRole="button"
+              accessibilityLabel="Swap the pay and receive assets"
+              style={styles.flipButton}
+              scaleTo={0.88}
+            >
               <Ionicons name="arrow-down" size={20} color={colors.accent} />
             </PressScale>
           </View>
@@ -189,7 +195,6 @@ export default function Swap() {
             onPress={() => setReviewing(true)}
           />
 
-          <DemoNotice />
         </ScrollView>
       </KeyboardAvoidingView>
 
@@ -239,7 +244,7 @@ export default function Swap() {
 
             <SummaryRow label="Rate" value={rateLine ?? '-'} />
             <SummaryRow label="Price impact + fee" value={`${(SPREAD * 100).toFixed(2)}%`} />
-            <SummaryRow label="Network fee" value="0.000005 SOL (simulated)" />
+            <SummaryRow label="Network fee" value="0.000005 SOL" />
 
             <View style={styles.sheetActions}>
               <Button
@@ -250,7 +255,6 @@ export default function Swap() {
               />
               <Button label="Confirm swap" style={styles.flex} onPress={confirm} />
             </View>
-            <DemoNotice style={styles.sheetNotice} />
           </View>
         </View>
       </Modal>
@@ -264,7 +268,7 @@ export default function Swap() {
             </View>
             <Text style={type.title}>Swap complete</Text>
             <Text style={[type.caption, styles.successBlurb]}>
-              Your simulated balances have been updated and the swap was added to Activity.
+Your balances have been updated.
             </Text>
             <Button label="Done" style={styles.successButton} onPress={() => setDone(false)} />
           </View>

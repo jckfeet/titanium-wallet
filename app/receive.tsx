@@ -10,7 +10,7 @@ import React, { useState } from 'react';
 import { ScrollView, Share, StyleSheet, Text, View } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 
-import { Button, Card, DemoNotice, PressScale, Screen, Separator } from '@/components/ui';
+import { Button, Card, PressScale, Screen, Separator } from '@/components/ui';
 import { TokenIcon } from '@/components/TokenIcon';
 import { NetworkId, NETWORKS, useWallet } from '@/store/wallet';
 import { colors, radius, spacing, type } from '@/theme';
@@ -32,7 +32,7 @@ export default function Receive() {
   const handleShare = async () => {
     try {
       await Share.share({
-        message: `My ${active.name} demo address in Titanium: ${address}\n\n(Titanium is a wallet simulator - this address is not real and cannot receive funds.)`,
+        message: `My ${active.name} address: ${address}`,
       });
     } catch {
       // Share sheet dismissed.
@@ -100,14 +100,13 @@ export default function Receive() {
         </View>
 
         <View style={styles.warning}>
-          <Ionicons name="warning-outline" size={18} color={colors.warning} />
+          <Ionicons name="information-circle-outline" size={18} color={colors.textSecondary} />
           <Text style={[type.small, styles.warningText]}>
-            This address is generated for the demo. It exists only on this device and cannot
-            receive real assets - do not send anything to it.
+            This address is generated on this device and cannot receive assets. Do not send
+            anything to it.
           </Text>
         </View>
 
-        <DemoNotice />
       </ScrollView>
     </Screen>
   );
@@ -188,11 +187,11 @@ const styles = StyleSheet.create({
     margin: spacing.lg,
     padding: spacing.md,
     borderRadius: radius.md,
-    backgroundColor: 'rgba(245, 166, 35, 0.1)',
+    backgroundColor: colors.surface,
   },
   warningText: {
     flex: 1,
-    color: colors.warning,
+    color: colors.textSecondary,
     lineHeight: 17,
   },
 });

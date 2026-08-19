@@ -126,7 +126,7 @@ export function PriceChart({ series, color, height = 200, onScrub }: PriceChartP
     [updateFromTouch, endScrub],
   );
 
-  const gradientId = 'titaniumChartFill';
+  const gradientId = 'photonChartFill';
 
   return (
     <View style={[styles.container, { height }]} onLayout={handleLayout} {...panResponder.panHandlers}>

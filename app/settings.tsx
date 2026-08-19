@@ -1,9 +1,9 @@
-/** Settings - profile, placeholder security rows, and the way into Demo Settings. */
+/** Settings - profile, security and preference rows. */
 import { Ionicons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 
 import { LogoMark } from '@/components/Logo';
 import { Card, DemoNotice, ListRow, Screen, SectionHeader, Separator } from '@/components/ui';
@@ -14,9 +14,11 @@ import { colors, radius, spacing, type } from '@/theme';
 export default function Settings() {
   const router = useRouter();
   const addresses = useWallet((s) => s.addresses);
+  const hideBalances = useWallet((s) => s.hideBalances);
+  const setHideBalances = useWallet((s) => s.setHideBalances);
 
-  const notSimulated = (feature: string) =>
-    Alert.alert(feature, `${feature} is not simulated in this demo. The row is a placeholder.`);
+  const comingSoon = (feature: string) =>
+    Alert.alert(feature, `${feature} is not available yet.`);
 
   return (
     <Screen edges={['bottom']}>
@@ -36,7 +38,7 @@ export default function Settings() {
             title="Account"
             subtitle="Account 1"
             chevron
-            onPress={() => notSimulated('Account management')}
+            onPress={() => comingSoon('Account management')}
           />
           <Separator inset={68} />
           <ListRow
@@ -51,7 +53,7 @@ export default function Settings() {
             title="Networks"
             subtitle="Solana, Ethereum, Polygon, Bitcoin"
             chevron
-            onPress={() => notSimulated('Network settings')}
+            onPress={() => comingSoon('Network settings')}
           />
         </Card>
 
@@ -60,12 +62,11 @@ export default function Settings() {
           <ListRow
             left={<SettingIcon name="key-outline" />}
             title="Secret recovery phrase"
-            subtitle="Cosmetic in this demo"
             chevron
             onPress={() =>
               Alert.alert(
                 'Recovery phrase',
-                'The phrase shown during onboarding is decorative. Nothing in Titanium derives keys from it, so there is nothing to reveal or protect.',
+                'Never share your recovery phrase. Anyone who has it can access your wallet.',
               )
             }
           />
@@ -74,7 +75,7 @@ export default function Settings() {
             left={<SettingIcon name="finger-print-outline" />}
             title="Face ID & passcode"
             chevron
-            onPress={() => notSimulated('Biometric lock')}
+            onPress={() => comingSoon('Biometric lock')}
           />
           <Separator inset={68} />
           <ListRow
@@ -82,17 +83,32 @@ export default function Settings() {
             title="Auto-lock"
             subtitle="Never"
             chevron
-            onPress={() => notSimulated('Auto-lock')}
+            onPress={() => comingSoon('Auto-lock')}
           />
         </Card>
 
         <SectionHeader title="Preferences" />
         <Card style={styles.card}>
           <ListRow
+            left={<SettingIcon name="eye-off-outline" />}
+            title="Hide balances"
+            subtitle="Mask every figure across the app"
+            right={
+              <Switch
+                value={hideBalances}
+                onValueChange={setHideBalances}
+                trackColor={{ false: colors.surfacePressed, true: colors.accentDeep }}
+                thumbColor={colors.text}
+                accessibilityLabel="Hide balances"
+              />
+            }
+          />
+          <Separator inset={68} />
+          <ListRow
             left={<SettingIcon name="notifications-outline" />}
             title="Notifications"
             chevron
-            onPress={() => notSimulated('Notifications')}
+            onPress={() => comingSoon('Notifications')}
           />
           <Separator inset={68} />
           <ListRow
@@ -100,28 +116,17 @@ export default function Settings() {
             title="Currency"
             subtitle="USD"
             chevron
-            onPress={() => notSimulated('Currency selection')}
-          />
-        </Card>
-
-        <SectionHeader title="Demo" />
-        <Card style={styles.card}>
-          <ListRow
-            left={<SettingIcon name="flask-outline" accent />}
-            title="Demo Settings"
-            subtitle="Edit balances, add tokens, reset data"
-            chevron
-            onPress={() => router.push('/demo-settings')}
+            onPress={() => comingSoon('Currency selection')}
           />
         </Card>
 
         <View style={styles.about}>
           <Text style={type.small}>
-            Titanium {Constants.expoConfig?.version ?? '1.0.0'} · Wallet interface simulator
+Photon {Constants.expoConfig?.version ?? '1.0.0'}
           </Text>
         </View>
 
-        {/* Permanent, non-removable demo disclosure. */}
+      
         <DemoNotice />
       </ScrollView>
     </Screen>

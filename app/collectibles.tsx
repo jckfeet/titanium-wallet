@@ -1,15 +1,15 @@
 /**
  * Collectibles.
  *
- * NFT support is out of scope for the demo, so this screen is a faithful empty
- * state rather than a stub with placeholder art.
+ * NFT support is out of scope, so this screen is an empty state rather than a
+ * stub with placeholder art.
  */
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { Button, DemoNotice, Screen } from '@/components/ui';
+import { Button, Screen } from '@/components/ui';
 import { colors, radius, spacing, type } from '@/theme';
 
 export default function Collectibles() {
@@ -23,8 +23,7 @@ export default function Collectibles() {
         </View>
         <Text style={[type.body, styles.title]}>No collectibles yet</Text>
         <Text style={[type.caption, styles.blurb]}>
-          Collectibles you receive will appear here. Titanium does not simulate NFTs, so this list
-          stays empty.
+Collectibles you receive will appear here.
         </Text>
         <Button
           label="Explore dApps"
@@ -34,7 +33,6 @@ export default function Collectibles() {
         />
       </View>
 
-      <DemoNotice />
     </Screen>
   );
 }

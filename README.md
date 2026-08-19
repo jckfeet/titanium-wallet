@@ -1,8 +1,8 @@
-# Titanium
+# Photon
 
 A demo crypto wallet for iOS, built with Expo and React Native.
 
-Titanium recreates the structure and feel of a modern mobile wallet - portfolio
+Photon recreates the structure and feel of a modern mobile wallet - portfolio
 home, token detail with price charts, swap, activity feed, send/receive/buy
 flows - as a **simulator**. Every balance is fake and editable. There is no
 blockchain connection, no key material, no signing and no money. It exists to
@@ -115,7 +115,7 @@ macOS runner. It triggers on a `v*` tag push, or manually via
 3. `npx expo prebuild --platform ios --clean` generates the native project
 4. `npx pod-install` installs CocoaPods dependencies
 5. `xcodebuild archive` with `CODE_SIGNING_ALLOWED=NO` - no certificates needed
-6. Packages the archive by hand: `Payload/Titanium.app` zipped to `Titanium.ipa`
+6. Packages the archive by hand: `Payload/Photon.app` zipped to `Photon.ipa`
    (`-exportArchive` is not usable because it demands a signing identity)
 7. Publishes a GitHub Release with the `.ipa` attached - a tag push makes a real
    release, a manual run makes a prerelease named after the run number
@@ -130,15 +130,15 @@ while private repos bill macOS runners at 10x against the monthly quota.
 The released `.ipa` is unsigned, so you sign it yourself with a **free** Apple
 ID. No Mac and no paid developer account required.
 
-1. Download `Titanium.ipa` from the [Releases](../../releases) page.
+1. Download `Photon.ipa` from the [Releases](../../releases) page.
 2. Install [Sideloadly](https://sideloadly.io) and iTunes (the non-Microsoft-Store
    version, so Sideloadly can talk to the device).
 3. Connect your iPhone over USB and trust the computer.
-4. Drag `Titanium.ipa` into Sideloadly, enter your Apple ID, and click **Start**.
+4. Drag `Photon.ipa` into Sideloadly, enter your Apple ID, and click **Start**.
    Use an app-specific password if you have two-factor authentication on.
 5. On the phone: **Settings > General > VPN & Device Management** and trust your
    developer certificate.
-6. Launch Titanium.
+6. Launch Photon.
 
 ### About the 7-day expiry
 
@@ -177,10 +177,12 @@ tools/                   Asset and wordlist generators
 
 ## Branding
 
-**Titanium's own branding is original.** The name and the octagon mark are mine;
-the app icons are generated procedurally by `tools/gen-icons.mjs` - a faceted
-octagon with a negative-space "T". No other wallet's name, logo, artwork or copy
-appears anywhere in the app, repo or metadata.
+**Photon's own branding is original.** The name and the disc mark are mine; the
+app icons are generated procedurally by `tools/gen-icons.mjs` - a flat disc with
+a negative-space "P", drawn from the geometry in that file and mirrored by
+`src/components/Logo.tsx` so the icon and the in-app mark are the same shape. No
+other wallet's name, logo, artwork or copy appears anywhere in the app, repo or
+metadata.
 
 **Asset logos belong to their issuers.** Token and company marks are referenced
 by URL and fetched at runtime for identification purposes, exactly as any

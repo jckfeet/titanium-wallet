@@ -1,8 +1,7 @@
 /**
  * Send, step 2 - recipient and amount, then review and a success animation.
  *
- * Any string is accepted as a recipient: there is no chain to validate against,
- * and rejecting input would only get in the way of the demo.
+ * Any string is accepted as a recipient.
  */
 import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
@@ -28,7 +27,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { TokenIcon } from '@/components/TokenIcon';
-import { Button, Card, DemoNotice, PressScale, Screen } from '@/components/ui';
+import { Button, Card, PressScale, Screen } from '@/components/ui';
 import { fakeSolanaAddress } from '@/lib/base58';
 import { formatAmount, formatUsd, parseAmount, truncateMiddle } from '@/lib/format';
 import { useHolding } from '@/store/portfolio';
@@ -111,13 +110,6 @@ export default function SendCompose() {
                 <Ionicons name="clipboard-outline" size={16} color={colors.accent} />
                 <Text style={styles.miniLabel}>Paste</Text>
               </PressScale>
-              <PressScale
-                style={styles.miniButton}
-                onPress={() => setAddress(fakeSolanaAddress())}
-              >
-                <Ionicons name="shuffle-outline" size={16} color={colors.accent} />
-                <Text style={styles.miniLabel}>Demo address</Text>
-              </PressScale>
             </View>
           </Card>
 
@@ -166,7 +158,6 @@ export default function SendCompose() {
             onPress={() => setReviewing(true)}
           />
 
-          <DemoNotice />
         </ScrollView>
       </KeyboardAvoidingView>
 
@@ -191,7 +182,7 @@ export default function SendCompose() {
             </View>
 
             <SummaryRow label="To" value={truncateMiddle(address.trim(), 8, 8)} />
-            <SummaryRow label="Network" value="Solana (simulated)" />
+            <SummaryRow label="Network" value="Solana" />
             <SummaryRow label="Network fee" value="0.000005 SOL" />
 
             <View style={styles.sheetActions}>
@@ -203,7 +194,6 @@ export default function SendCompose() {
               />
               <Button label="Confirm send" style={styles.flex} onPress={confirm} />
             </View>
-            <DemoNotice style={styles.sheetNotice} />
           </View>
         </View>
       </Modal>
@@ -265,7 +255,7 @@ function SuccessOverlay({
           <Animated.View style={[styles.successText, textStyle]}>
             <Text style={type.title}>Sent</Text>
             <Text style={[type.caption, styles.successBlurb]}>
-              {amount} {token} left your simulated balance and the transfer was added to Activity.
+{amount} {token} is on its way.
             </Text>
           </Animated.View>
           <Button label="Done" style={styles.successButton} onPress={onDone} />

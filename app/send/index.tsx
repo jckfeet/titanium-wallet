@@ -5,7 +5,7 @@ import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { TokenIcon } from '@/components/TokenIcon';
-import { Card, DemoNotice, ListRow, Screen, Separator } from '@/components/ui';
+import { Card, ListRow, Screen, Separator } from '@/components/ui';
 import { formatAmount, formatUsd } from '@/lib/format';
 import { usePortfolio } from '@/store/portfolio';
 import { colors, radius, spacing, type } from '@/theme';
@@ -64,7 +64,6 @@ export default function SendPicker() {
           ) : null}
         </Card>
 
-        <DemoNotice style={styles.notice} />
       </ScrollView>
     </Screen>
   );

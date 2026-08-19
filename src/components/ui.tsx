@@ -77,7 +77,20 @@ interface PressScaleProps extends PressableProps {
   haptics?: boolean;
 }
 
-/** Pressable that springs down on touch. The base for every tappable control. */
+/**
+ * Text in fixed-height containers (52pt buttons, 60pt rows, 56pt circles) is
+ * capped so the largest accessibility text sizes cannot overflow them. Text in
+ * free-flowing blocks is left uncapped and scales without limit.
+ */
+export const FIXED_HEIGHT_FONT_CAP = 1.4;
+
+/**
+ * Pressable that springs down on touch. The base for every tappable control.
+ *
+ * Defaults to the `button` role so nothing reaches a screen reader as an
+ * unlabelled view; callers override it (or drop it with `accessible={false}`)
+ * through `...rest`.
+ */
 export function PressScale({
   children,
   style,
@@ -92,6 +105,7 @@ export function PressScale({
 
   return (
     <AnimatedPressable
+      accessibilityRole="button"
       style={[style, animatedStyle]}
       onPressIn={(e) => {
         scale.value = withTiming(scaleTo, { duration: 90 });
@@ -143,6 +157,7 @@ export function Button({
       ]}
     >
       <Text
+        maxFontSizeMultiplier={FIXED_HEIGHT_FONT_CAP}
         style={[
           type.button,
           isPrimary && styles.buttonPrimaryLabel,
@@ -167,12 +182,24 @@ interface CircleActionProps {
 export function CircleAction({ icon, label, onPress, emphasis = false }: CircleActionProps) {
   return (
     <View style={styles.circleActionWrap}>
-      <PressScale onPress={onPress} scaleTo={0.9} style={styles.circleActionHit}>
+      <PressScale
+        onPress={onPress}
+        scaleTo={0.9}
+        accessibilityRole="button"
+        accessibilityLabel={label}
+        style={styles.circleActionHit}
+      >
         <View style={[styles.circleActionCircle, emphasis && styles.circleActionEmphasis]}>
           <Ionicons name={icon} size={22} color={emphasis ? colors.bg : colors.accent} />
         </View>
       </PressScale>
-      <Text style={type.actionLabel}>{label}</Text>
+      <Text
+        style={type.actionLabel}
+        importantForAccessibility="no"
+        maxFontSizeMultiplier={FIXED_HEIGHT_FONT_CAP}
+      >
+        {label}
+      </Text>
     </View>
   );
 }
@@ -209,11 +236,15 @@ export function ListRow({
     <View style={[styles.row, style]}>
       {left ? <View style={styles.rowLeft}>{left}</View> : null}
       <View style={styles.rowBody}>
-        <Text style={type.body} numberOfLines={1}>
+        <Text style={type.body} numberOfLines={1} maxFontSizeMultiplier={FIXED_HEIGHT_FONT_CAP}>
           {title}
         </Text>
         {subtitle ? (
-          <Text style={[type.caption, styles.rowSubtitle]} numberOfLines={1}>
+          <Text
+            style={[type.caption, styles.rowSubtitle]}
+            numberOfLines={1}
+            maxFontSizeMultiplier={FIXED_HEIGHT_FONT_CAP}
+          >
             {subtitle}
           </Text>
         ) : null}
@@ -222,12 +253,20 @@ export function ListRow({
       {rightTitle || rightSubtitle ? (
         <View style={styles.rowRight}>
           {rightTitle ? (
-            <Text style={type.body} numberOfLines={1}>
+            <Text
+              style={type.body}
+              numberOfLines={1}
+              maxFontSizeMultiplier={FIXED_HEIGHT_FONT_CAP}
+            >
               {rightTitle}
             </Text>
           ) : null}
           {rightSubtitle ? (
-            <Text style={[type.caption, styles.rowSubtitle, rightSubtitleStyle]} numberOfLines={1}>
+            <Text
+              style={[type.caption, styles.rowSubtitle, rightSubtitleStyle]}
+              numberOfLines={1}
+              maxFontSizeMultiplier={FIXED_HEIGHT_FONT_CAP}
+            >
               {rightSubtitle}
             </Text>
           ) : null}
@@ -245,8 +284,20 @@ export function ListRow({
   );
 
   if (!onPress) return content;
+
+  // Announce the row as a single unit - otherwise VoiceOver stops on the icon,
+  // the title, the subtitle and the value as four separate elements.
+  const spoken = [title, subtitle, rightTitle, rightSubtitle].filter(Boolean).join(', ');
+
   return (
-    <PressScale onPress={onPress} scaleTo={0.99} haptics={false}>
+    <PressScale
+      onPress={onPress}
+      scaleTo={0.99}
+      haptics={false}
+      accessible
+      accessibilityRole="button"
+      accessibilityLabel={spoken}
+    >
       {content}
     </PressScale>
   );
@@ -280,15 +331,16 @@ export function SectionHeader({ title, action }: { title: string; action?: React
 }
 
 /**
- * The permanent demo disclosure.
+ * The demo disclosure.
  *
- * Titanium simulates a wallet; this label states that plainly and is
- * deliberately not removable from Settings or the demo panel.
+ * Photon simulates a wallet; this states that plainly. Deliberately quiet -
+ * tertiary text, no warning colour - but present wherever a first-time viewer
+ * would otherwise take the balances at face value.
  */
 export function DemoNotice({ style }: { style?: StyleProp<ViewStyle> }) {
   return (
     <View style={[styles.demoNotice, style]}>
-      <Ionicons name="information-circle-outline" size={16} color={colors.textTertiary} />
+      <Ionicons name="information-circle-outline" size={14} color={colors.textTertiary} />
       <Text style={[type.small, styles.demoNoticeText]}>
         Demo - not real funds. Balances are simulated and no blockchain is involved.
       </Text>
@@ -404,6 +456,7 @@ const styles = StyleSheet.create({
   demoNoticeText: {
     flex: 1,
     color: colors.textTertiary,
-    lineHeight: 17,
+    lineHeight: 16,
   },
+
 });

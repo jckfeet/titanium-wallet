@@ -2,7 +2,7 @@
  * Home - account row, portfolio total with a change pill, the cash card, then
  * Tokens and Stocks sections.
  *
- * Tapping the total five times inside three seconds opens the hidden demo
+ * Tapping the total five times inside three seconds opens the hidden balance
  * panel; see `handleBalanceTap`.
  */
 import { Ionicons } from '@expo/vector-icons';
@@ -12,7 +12,9 @@ import { Modal, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react
 
 import { TokenIcon } from '@/components/TokenIcon';
 import { Card, PressScale, Separator } from '@/components/ui';
-import { formatAmount, formatUsd } from '@/lib/format';
+import { buildPortfolioSeries, TIMEFRAMES, type Timeframe } from '@/lib/chart';
+import { formatAmount, formatUsd, maskIf } from '@/lib/format';
+import { PriceChart } from '@/components/PriceChart';
 import { HoldingRow, usePortfolio } from '@/store/portfolio';
 import { usePriceStore, useRefreshPrices } from '@/store/prices';
 import { useWallet } from '@/store/wallet';
@@ -26,13 +28,15 @@ export default function Home() {
   const router = useRouter();
   const tokens = useWallet((s) => s.tokens);
   const cashBalance = useWallet((s) => s.cashBalance);
-  const showDemoBanner = useWallet((s) => s.showDemoBanner);
+  const hideBalances = useWallet((s) => s.hideBalances);
+  const setHideBalances = useWallet((s) => s.setHideBalances);
   const { rows, totalUsd, change24hPct, change24hUsd } = usePortfolio();
 
   const refresh = usePriceStore((s) => s.refresh);
   const offline = usePriceStore((s) => s.offline);
   const [refreshing, setRefreshing] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
+  const [timeframe, setTimeframe] = useState<Timeframe>('1D');
 
   useRefreshPrices(tokens);
 
@@ -49,9 +53,24 @@ export default function Home() {
     tapTimes.current = [...tapTimes.current, now].filter((t) => now - t <= SECRET_TAP_WINDOW_MS);
     if (tapTimes.current.length >= SECRET_TAP_COUNT) {
       tapTimes.current = [];
-      router.push('/demo-settings');
+      router.push('/balances');
     }
   }, [router]);
+
+  const series = useMemo(
+    () =>
+      buildPortfolioSeries(
+        rows.map((r) => ({
+          id: r.token.id,
+          balance: r.balance,
+          price: r.price,
+          change24h: r.change24h,
+        })),
+        timeframe,
+        cashBalance,
+      ),
+    [rows, timeframe, cashBalance],
+  );
 
   const { cryptoRows, stockRows } = useMemo(
     () => ({
@@ -82,24 +101,31 @@ export default function Home() {
           <Ionicons name="chevron-down" size={16} color={colors.textSecondary} />
         </PressScale>
 
-        {showDemoBanner ? (
-          <View style={styles.banner}>
-            <Ionicons name="flask-outline" size={14} color={colors.warning} />
-            <Text style={styles.bannerText}>DEMO FUNDS - simulated, not real assets</Text>
-          </View>
-        ) : null}
-
         <PressScale
           onPress={handleBalanceTap}
           scaleTo={0.985}
           haptics={false}
           style={styles.balanceBlock}
         >
-          <Text style={styles.balance}>{formatUsd(totalUsd)}</Text>
+          <View style={styles.balanceRow}>
+            <Text style={styles.balance}>{maskIf(hideBalances, formatUsd(totalUsd))}</Text>
+            <PressScale
+              onPress={() => setHideBalances(!hideBalances)}
+              scaleTo={0.9}
+              accessibilityRole="button"
+              accessibilityLabel={hideBalances ? 'Show balances' : 'Hide balances'}
+              style={styles.eyeButton}
+            >
+              <Ionicons
+                name={hideBalances ? 'eye-off-outline' : 'eye-outline'}
+                size={20}
+                color={colors.textSecondary}
+              />
+            </PressScale>
+          </View>
           <View style={styles.changeRow}>
             <Text style={[styles.changeAmount, { color: positive ? colors.positive : colors.negative }]}>
-              {positive ? '+' : '-'}
-              {formatUsd(Math.abs(change24hUsd))}
+              {maskIf(hideBalances, `${positive ? '+' : '-'}${formatUsd(Math.abs(change24hUsd))}`)}
             </Text>
             <View
               style={[
@@ -116,6 +142,37 @@ export default function Home() {
           {offline ? <Text style={styles.offline}>Offline - showing bundled prices</Text> : null}
         </PressScale>
 
+        <PriceChart
+          series={series}
+          color={positive ? colors.positive : colors.negative}
+          height={140}
+        />
+
+        <View style={styles.timeframes}>
+          {TIMEFRAMES.map((tf) => {
+            const active = tf === timeframe;
+            return (
+              <PressScale
+                key={tf}
+                onPress={() => setTimeframe(tf)}
+                accessibilityRole="button"
+                accessibilityLabel={`Show ${tf} portfolio history`}
+                accessibilityState={{ selected: active }}
+                style={[styles.timeframeChip, active && styles.timeframeChipActive]}
+              >
+                <Text
+                  style={[
+                    type.small,
+                    { color: active ? colors.bg : colors.textSecondary, fontWeight: '700' },
+                  ]}
+                >
+                  {tf}
+                </Text>
+              </PressScale>
+            );
+          })}
+        </View>
+
         <Card style={styles.cashCard}>
           <PressScale scaleTo={0.99} haptics={false} onPress={() => router.push('/buy')}>
             <View style={styles.cashRow}>
@@ -123,7 +180,7 @@ export default function Home() {
                 <Ionicons name="cash-outline" size={20} color={colors.text} />
               </View>
               <Text style={[type.body, styles.cashLabel]}>Cash</Text>
-              <Text style={type.body}>{formatUsd(cashBalance)}</Text>
+              <Text style={type.body}>{maskIf(hideBalances, formatUsd(cashBalance))}</Text>
             </View>
           </PressScale>
         </Card>
@@ -150,11 +207,6 @@ export default function Home() {
           </View>
         ) : null}
 
-        <View style={styles.footerNotice}>
-          <Text style={styles.footerNoticeText}>
-            Demo - not real funds. Balances are simulated and no blockchain is involved.
-          </Text>
-        </View>
       </ScrollView>
 
       <AccountSheet visible={accountOpen} onClose={() => setAccountOpen(false)} />
@@ -294,23 +346,28 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     fontWeight: '500',
   },
-  banner: {
+  timeframes: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: spacing.sm,
+    paddingTop: spacing.md,
+  },
+  timeframeChip: {
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    borderRadius: radius.sm,
+    backgroundColor: colors.surface,
+  },
+  timeframeChipActive: {
+    backgroundColor: colors.accent,
+  },
+  balanceRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.sm,
-    alignSelf: 'flex-start',
-    marginHorizontal: spacing.lg,
-    marginTop: spacing.md,
-    paddingVertical: 5,
-    paddingHorizontal: spacing.md,
-    borderRadius: radius.sm,
-    backgroundColor: 'rgba(245, 166, 35, 0.12)',
+    gap: spacing.md,
   },
-  bannerText: {
-    color: colors.warning,
-    fontSize: 11,
-    fontWeight: '700',
-    letterSpacing: 0.3,
+  eyeButton: {
+    padding: spacing.xs,
   },
   balanceBlock: {
     paddingHorizontal: spacing.lg,
@@ -416,16 +473,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 
-  footerNotice: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.xxl,
-  },
-  footerNoticeText: {
-    color: colors.textTertiary,
-    fontSize: 11,
-    lineHeight: 16,
-    textAlign: 'center',
-  },
 
   scrim: {
     flex: 1,

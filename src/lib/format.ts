@@ -1,5 +1,16 @@
 /** Presentation helpers shared across every screen. */
 
+/** Stand-in shown wherever a figure is hidden by the privacy toggle. */
+export const MASKED = '••••••';
+
+/**
+ * Wraps any already-formatted figure so the privacy toggle can blank it.
+ * Formatting still runs, so layout does not jump when balances are revealed.
+ */
+export function maskIf(hidden: boolean, text: string): string {
+  return hidden ? MASKED : text;
+}
+
 /** `$1,234.56` - the standard USD figure used in lists and headers. */
 export function formatUsd(value: number, opts?: { compact?: boolean }): string {
   if (!isFinite(value)) return '$0.00';

@@ -15,7 +15,6 @@ import { PriceChart } from '@/components/PriceChart';
 import { TokenIcon } from '@/components/TokenIcon';
 import {
   Card,
-  DemoNotice,
   ListRow,
   PressScale,
   Screen,
@@ -79,7 +78,7 @@ export default function TokenDetail() {
   const handleShare = async () => {
     try {
       await Share.share({
-        message: `${token.name} (${token.symbol}) - ${formatPrice(holding.price)} - shared from Titanium, a demo wallet with simulated balances.`,
+        message: `${token.name} (${token.symbol}) - ${formatPrice(holding.price)}`,
       });
     } catch {
       // The user dismissed the share sheet; nothing to recover from.
@@ -158,7 +157,7 @@ export default function TokenDetail() {
           <ListRow
             left={<ActionIcon name="card-outline" />}
             title="Buy"
-            subtitle="Add more with simulated cash"
+            subtitle="Add to your position"
             chevron
             onPress={() => router.push('/buy')}
           />
@@ -166,24 +165,20 @@ export default function TokenDetail() {
           <ListRow
             left={<ActionIcon name="lock-closed-outline" />}
             title="Stake"
-            subtitle="Not simulated in this demo"
+            subtitle="Earn rewards on your holdings"
             chevron
             onPress={() =>
-              stub('Staking', 'Titanium does not simulate staking. This row is a placeholder.')
+              stub('Staking', `Staking is not available for ${token.symbol} yet.`)
             }
           />
           <Separator inset={68} />
           <ListRow
             left={<ActionIcon name="open-outline" />}
             title="View on explorer"
-            subtitle="Copies the demo address instead"
             chevron
             onPress={async () => {
               await Clipboard.setStringAsync(token.id);
-              stub(
-                'Explorer',
-                'There is no chain behind this token, so there is nothing to open. The token id was copied instead.',
-              );
+              stub('Copied', `${token.symbol} address copied to your clipboard.`);
             }}
           />
           <Separator inset={68} />
@@ -215,7 +210,6 @@ export default function TokenDetail() {
           )}
         </Card>
 
-        <DemoNotice style={styles.notice} />
       </ScrollView>
     </Screen>
   );

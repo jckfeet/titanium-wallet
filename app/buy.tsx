@@ -1,8 +1,5 @@
 /**
  * Buy - pick a token and a USD amount, confirm, and the balance is credited.
- *
- * Mock only: no payment provider, no card entry, no order. The screen states
- * that plainly rather than mimicking a checkout.
  */
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -20,7 +17,7 @@ import {
 
 import { TokenIcon } from '@/components/TokenIcon';
 import { TokenPickerModal } from '@/components/TokenPickerModal';
-import { Button, Card, DemoNotice, PressScale, Screen } from '@/components/ui';
+import { Button, Card, PressScale, Screen } from '@/components/ui';
 import { formatAmount, formatPrice, formatUsd, parseAmount } from '@/lib/format';
 import { usePortfolio } from '@/store/portfolio';
 import { useWallet } from '@/store/wallet';
@@ -117,14 +114,6 @@ export default function Buy() {
             </PressScale>
           </Card>
 
-          <View style={styles.notice}>
-            <Ionicons name="flask-outline" size={18} color={colors.warning} />
-            <Text style={[type.small, styles.noticeText]}>
-              Mock purchase. No payment method is collected and no order is placed - confirming
-              simply credits your simulated balance.
-            </Text>
-          </View>
-
           <Button
             label={canBuy ? `Buy ${formatUsd(usd)} of ${row.token.symbol}` : 'Enter an amount'}
             disabled={!canBuy}
@@ -132,7 +121,6 @@ export default function Buy() {
             onPress={confirm}
           />
 
-          <DemoNotice />
         </ScrollView>
       </KeyboardAvoidingView>
 
@@ -154,7 +142,7 @@ export default function Buy() {
             </View>
             <Text style={type.title}>Purchase complete</Text>
             <Text style={[type.caption, styles.successBlurb]}>
-              {row.token.symbol} was credited to your simulated balance and added to Activity.
+{row.token.symbol} has been added to your portfolio.
             </Text>
             <Button
               label="Done"

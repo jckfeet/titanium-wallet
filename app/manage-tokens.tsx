@@ -4,7 +4,7 @@ import { ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 
 import { TokenIcon } from '@/components/TokenIcon';
-import { Button, Card, DemoNotice, Screen, SectionHeader, Separator } from '@/components/ui';
+import { Button, Card, Screen, SectionHeader, Separator } from '@/components/ui';
 import { formatAmount, formatUsd } from '@/lib/format';
 import { usePortfolio } from '@/store/portfolio';
 import { useWallet } from '@/store/wallet';
@@ -52,13 +52,12 @@ export default function ManageTokens() {
         </Card>
 
         <Button
-          label="Add a custom token"
+          label="Add a custom asset"
           variant="secondary"
           style={styles.addButton}
-          onPress={() => router.push('/demo-settings')}
+          onPress={() => router.push('/balances')}
         />
 
-        <DemoNotice style={styles.notice} />
       </ScrollView>
     </Screen>
   );

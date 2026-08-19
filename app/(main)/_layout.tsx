@@ -76,14 +76,22 @@ export default function MainLayout() {
         <PressScale
           scaleTo={0.99}
           haptics={false}
-          onPress={() => router.navigate('/(main)/explore')}
+          onPress={() => router.push('/search')}
+          accessibilityRole="search"
+          accessibilityLabel="Search assets and apps"
           style={styles.searchField}
         >
           <Ionicons name="search" size={18} color={colors.textTertiary} />
-          <Text style={styles.searchPlaceholder}>Search Titanium</Text>
+          <Text style={styles.searchPlaceholder}>Search Photon</Text>
         </PressScale>
 
-        <PressScale scaleTo={0.9} onPress={() => setActionsOpen(true)} style={styles.fab}>
+        <PressScale
+          scaleTo={0.9}
+          onPress={() => setActionsOpen(true)}
+          accessibilityRole="button"
+          accessibilityLabel="Open actions"
+          style={styles.fab}
+        >
           <Ionicons name="add" size={28} color={colors.bg} />
         </PressScale>
       </View>
@@ -111,10 +119,10 @@ function ActionSheet({ visible, onClose }: { visible: boolean; onClose: () => vo
     {
       icon: 'arrow-down',
       label: 'Receive',
-      hint: 'Show your demo address',
+      hint: 'Show your address',
       onPress: () => go('/receive'),
     },
-    { icon: 'arrow-up', label: 'Send', hint: 'Move simulated funds', onPress: () => go('/send') },
+    { icon: 'arrow-up', label: 'Send', hint: 'Transfer to an address', onPress: () => go('/send') },
     {
       icon: 'swap-horizontal',
       label: 'Swap',
@@ -124,7 +132,7 @@ function ActionSheet({ visible, onClose }: { visible: boolean; onClose: () => vo
         router.navigate('/(main)/trade');
       },
     },
-    { icon: 'card-outline', label: 'Buy', hint: 'Mock purchase', onPress: () => go('/buy') },
+    { icon: 'card-outline', label: 'Buy', hint: 'Add funds with card', onPress: () => go('/buy') },
   ];
 
   return (

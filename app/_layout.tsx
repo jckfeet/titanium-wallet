@@ -56,7 +56,11 @@ export default function RootLayout() {
           <Stack.Screen name="receive" options={{ title: 'Receive', presentation: 'modal' }} />
           <Stack.Screen name="buy" options={{ title: 'Buy', presentation: 'modal' }} />
           <Stack.Screen name="settings" options={{ title: 'Settings', presentation: 'modal' }} />
-          <Stack.Screen name="demo-settings" options={{ title: 'Demo Settings' }} />
+          <Stack.Screen name="balances" options={{ title: 'Balances' }} />
+          <Stack.Screen
+            name="search"
+            options={{ title: 'Search', presentation: 'modal' }}
+          />
           <Stack.Screen
             name="manage-tokens"
             options={{ title: 'Manage token list', presentation: 'modal' }}

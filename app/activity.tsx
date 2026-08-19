@@ -10,7 +10,7 @@ import React, { useMemo, useState } from 'react';
 import { Modal, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { ActivityRow } from '@/components/ActivityRow';
-import { Button, Card, DemoNotice, Screen, SectionHeader, Separator } from '@/components/ui';
+import { Button, Card, Screen, SectionHeader, Separator } from '@/components/ui';
 import { dayLabel, formatAmount, formatUsd } from '@/lib/format';
 import { ActivityItem, useWallet } from '@/store/wallet';
 import { colors, radius, spacing, type } from '@/theme';
@@ -48,7 +48,7 @@ export default function Activity() {
           <Ionicons name="time-outline" size={40} color={colors.textTertiary} />
           <Text style={[type.body, styles.emptyTitle]}>No activity yet</Text>
           <Text style={[type.caption, styles.emptyBlurb]}>
-            Sends, swaps and purchases you make in the demo will show up here.
+Sends, swaps and purchases will show up here.
           </Text>
         </View>
       ) : (
@@ -71,7 +71,6 @@ export default function Activity() {
               </Card>
             </View>
           ))}
-          <DemoNotice style={styles.notice} />
         </ScrollView>
       )}
 
@@ -122,7 +121,6 @@ export default function Activity() {
                     onPress={() => setSelected(null)}
                   />
                 </View>
-                <DemoNotice style={styles.sheetNotice} />
               </>
             ) : null}
           </View>

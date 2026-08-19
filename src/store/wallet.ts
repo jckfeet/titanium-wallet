@@ -69,8 +69,8 @@ export interface WalletState {
   activity: ActivityItem[];
   /** Simulated fiat cash balance shown in the Home cash section. */
   cashBalance: number;
-  /** Demo panel toggle for the Home banner. */
-  showDemoBanner: boolean;
+  /** When true every figure renders masked; see `maskIf`. */
+  hideBalances: boolean;
   /** True once AsyncStorage has rehydrated, gating the first navigation. */
   hydrated: boolean;
 
@@ -80,8 +80,8 @@ export interface WalletState {
   addCustomToken: (input: { name: string; symbol: string; balance: number; color: string }) => void;
   removeToken: (tokenId: string) => void;
   toggleTokenHidden: (tokenId: string) => void;
-  setShowDemoBanner: (value: boolean) => void;
   setCashBalance: (value: number) => void;
+  setHideBalances: (value: boolean) => void;
   send: (input: { tokenId: string; amount: number; address: string; usdValue: number }) => ActivityItem;
   swap: (input: {
     fromTokenId: string;
@@ -187,7 +187,7 @@ function factoryState(seed = randomId()) {
     hiddenTokens: [] as string[],
     activity: seedActivity(seed),
     cashBalance: 10_000,
-    showDemoBanner: true,
+    hideBalances: false,
   };
 }
 
@@ -249,9 +249,9 @@ export const useWallet = create<WalletState>()(
             : [...state.hiddenTokens, tokenId],
         })),
 
-      setShowDemoBanner: (value) => set({ showDemoBanner: value }),
-
       setCashBalance: (value) => set({ cashBalance: Math.max(0, value) }),
+
+      setHideBalances: (value) => set({ hideBalances: value }),
 
       send: ({ tokenId, amount, address, usdValue }) => {
         const item: ActivityItem = {
@@ -321,7 +321,7 @@ export const useWallet = create<WalletState>()(
       },
     }),
     {
-      name: 'titanium-wallet-v2',
+      name: 'titanium-wallet-v3',
       storage: createJSONStorage(() => AsyncStorage),
       partialize: ({ hydrated: _hydrated, ...rest }) => rest,
       onRehydrateStorage: () => (state) => {

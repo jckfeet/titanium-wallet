@@ -2,7 +2,7 @@
  * Explore - a searchable directory of well-known Solana apps.
  *
  * Rows are intentionally inert. Tapping one opens a sheet explaining that
- * Titanium does not connect to anything, rather than pretending to launch a
+ * Photon does not connect to anything, rather than pretending to launch a
  * dApp session.
  */
 import { Ionicons } from '@expo/vector-icons';
@@ -113,13 +113,7 @@ export default function Explore() {
                 <Text style={[type.title, styles.sheetTitle]}>{selected.name}</Text>
                 <Text style={[type.caption, styles.sheetCategory]}>{selected.category}</Text>
                 <Text style={[type.bodyRegular, styles.sheetBlurb]}>{selected.blurb}</Text>
-                <View style={styles.sheetNotice}>
-                  <Ionicons name="lock-closed-outline" size={16} color={colors.warning} />
-                  <Text style={[type.small, styles.sheetNoticeText]}>
-                    Demo only. Titanium has no network connection and cannot open or sign anything.
-                  </Text>
-                </View>
-                <Button label="Close" variant="secondary" onPress={() => setSelected(null)} />
+                <Button label="Open" onPress={() => setSelected(null)} />
               </>
             ) : null}
           </View>

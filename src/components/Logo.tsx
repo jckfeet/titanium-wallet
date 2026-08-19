@@ -1,73 +1,56 @@
 /**
- * The Titanium mark and wordmark.
+ * The Photon mark and wordmark.
  *
- * An original construction: a faceted octagon carrying a negative-space T,
- * matching the generated app icon. Drawn as SVG so it stays crisp at any size.
+ * A flat disc carrying a negative-space P: stem, bowl, and a counter punched
+ * back out in the disc colour. Drawn from geometry here rather than traced, and
+ * deliberately flat - a single fill reads better at tab-bar size than a
+ * gradient does.
  */
 import React from 'react';
 import { StyleSheet, Text, View, ViewStyle } from 'react-native';
-import Svg, { Defs, LinearGradient, Path, Stop } from 'react-native-svg';
+import Svg, { Circle, ClipPath, Defs, Path, Rect } from 'react-native-svg';
 
 import { colors, type } from '@/theme';
 
 interface LogoMarkProps {
   size?: number;
-  /** Colour showing through the negative-space T. */
+  /** Colour showing through the negative-space P. */
   cutout?: string;
+  /** Disc colour. */
+  fill?: string;
   style?: ViewStyle;
 }
 
-/** Regular octagon path, flat side up, inscribed in a circle of radius r. */
-function octagonPath(cx: number, cy: number, r: number): string {
-  const pts: string[] = [];
-  for (let i = 0; i < 8; i++) {
-    const angle = (Math.PI / 8) * (2 * i + 1);
-    pts.push(`${(cx + r * Math.cos(angle)).toFixed(3)},${(cy + r * Math.sin(angle)).toFixed(3)}`);
-  }
-  return `M${pts.join('L')}Z`;
-}
-
-export function LogoMark({ size = 40, cutout = colors.bg, style }: LogoMarkProps) {
+export function LogoMark({ size = 40, cutout = colors.bg, fill = colors.accent, style }: LogoMarkProps) {
   const s = size;
   const c = s / 2;
-  const r = s * 0.5;
+  const r = s / 2;
 
-  // T geometry, expressed against the octagon radius so it scales cleanly.
-  const barLeft = c - 0.54 * r;
-  const barW = 1.08 * r;
-  const barTop = c - 0.48 * r;
-  const barH = 0.31 * r;
-  const stemLeft = c - 0.155 * r;
-  const stemW = 0.31 * r;
-  const stemH = 1.02 * r;
-  const corner = 0.05 * r;
+  // P geometry, expressed against the disc radius so it scales cleanly.
+  const stemW = 0.17 * r;
+  const stemX = c - 0.30 * r;
+  const top = c - 0.52 * r;
+  const stemH = 1.04 * r;
+  const bowlOuter = 0.37 * r;
+  const bowlInner = 0.20 * r;
+  const bowlCx = stemX + stemW;
+  const bowlCy = top + bowlOuter;
 
   return (
     <View style={style}>
       <Svg width={s} height={s} viewBox={`0 0 ${s} ${s}`}>
         <Defs>
-          <LinearGradient id="titaniumMark" x1="0" y1="0" x2="1" y2="1">
-            <Stop offset="0" stopColor="#C6BBFF" />
-            <Stop offset="1" stopColor="#7C63D8" />
-          </LinearGradient>
+          {/* Clips the bowl to the stem's left edge - without it the ring wraps
+              both sides of the stem and the glyph reads as a phi, not a P. */}
+          <ClipPath id="photonBowl">
+            <Rect x={stemX} y={0} width={s} height={s} />
+          </ClipPath>
         </Defs>
-        <Path d={octagonPath(c, c, r)} fill="url(#titaniumMark)" />
-        <Path
-          d={
-            `M${barLeft + corner},${barTop}h${barW - corner * 2}a${corner},${corner} 0 0 1 ${corner},${corner}` +
-            `v${barH - corner * 2}a${corner},${corner} 0 0 1 -${corner},${corner}h-${barW - corner * 2}` +
-            `a${corner},${corner} 0 0 1 -${corner},-${corner}v-${barH - corner * 2}` +
-            `a${corner},${corner} 0 0 1 ${corner},-${corner}Z`
-          }
-          fill={cutout}
-        />
-        <Path
-          d={
-            `M${stemLeft},${barTop}h${stemW}v${stemH - corner}a${corner},${corner} 0 0 1 -${corner},${corner}` +
-            `h-${stemW - corner * 2}a${corner},${corner} 0 0 1 -${corner},-${corner}Z`
-          }
-          fill={cutout}
-        />
+        <Circle cx={c} cy={c} r={r} fill={fill} />
+        <Circle cx={bowlCx} cy={bowlCy} r={bowlOuter} fill={cutout} clipPath="url(#photonBowl)" />
+        <Circle cx={bowlCx} cy={bowlCy} r={bowlInner} fill={fill} clipPath="url(#photonBowl)" />
+        {/* Stem last so it closes the join with the bowl cleanly. */}
+        <Path d={`M${stemX},${top}h${stemW}v${stemH}h-${stemW}Z`} fill={cutout} />
       </Svg>
     </View>
   );
@@ -78,12 +61,12 @@ interface WordmarkProps {
   style?: ViewStyle;
 }
 
-/** Mark plus "Titanium" set in the system face. */
+/** Mark plus "Photon" set in the system face. */
 export function Wordmark({ size = 32, style }: WordmarkProps) {
   return (
     <View style={[styles.wordmark, style]}>
       <LogoMark size={size} />
-      <Text style={[type.title, { fontSize: size * 0.72, letterSpacing: -0.4 }]}>Titanium</Text>
+      <Text style={[type.title, { fontSize: size * 0.72, letterSpacing: -0.4 }]}>Photon</Text>
     </View>
   );
 }

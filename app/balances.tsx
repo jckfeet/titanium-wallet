@@ -1,11 +1,9 @@
 /**
- * Demo Settings - the hidden configuration panel.
+ * Balances - the hidden configuration panel.
  *
- * Reached by tapping the Home balance five times within three seconds, or from
- * Settings. Every balance in the wallet is editable here, custom tokens can be
- * added, and the whole thing can be reset to factory demo data.
- *
- * The "not real funds" disclosure on this screen is deliberately permanent.
+ * Reached by tapping the Home total five times within three seconds. Every
+ * holding in the wallet is editable here, custom assets can be added, and the
+ * whole store can be restored to its factory contents.
  */
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -38,14 +36,12 @@ import { usePortfolio } from '@/store/portfolio';
 import { useWallet } from '@/store/wallet';
 import { colors, radius, spacing, type } from '@/theme';
 
-export default function DemoSettings() {
+export default function Balances() {
   const router = useRouter();
   const { rows, totalUsd } = usePortfolio(true);
   const setBalance = useWallet((s) => s.setBalance);
   const addCustomToken = useWallet((s) => s.addCustomToken);
   const removeToken = useWallet((s) => s.removeToken);
-  const showDemoBanner = useWallet((s) => s.showDemoBanner);
-  const setShowDemoBanner = useWallet((s) => s.setShowDemoBanner);
   const cashBalance = useWallet((s) => s.cashBalance);
   const setCashBalance = useWallet((s) => s.setCashBalance);
   const resetAll = useWallet((s) => s.resetAll);
@@ -73,7 +69,7 @@ export default function DemoSettings() {
   const handleReset = () => {
     Alert.alert(
       'Reset all data?',
-      'Balances, activity, addresses and your recovery phrase go back to factory demo values. You will start again from the welcome screen.',
+      'Balances, activity, addresses and your recovery phrase are restored to their factory contents. You will start again from the welcome screen.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -91,7 +87,7 @@ export default function DemoSettings() {
   };
 
   const confirmRemove = (tokenId: string, symbol: string) => {
-    Alert.alert('Remove token?', `${symbol} will be removed from this demo wallet.`, [
+    Alert.alert('Remove asset?', `${symbol} will be removed from this wallet.`, [
       { text: 'Cancel', style: 'cancel' },
       { text: 'Remove', style: 'destructive', onPress: () => removeToken(tokenId) },
     ]);
@@ -108,15 +104,7 @@ export default function DemoSettings() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <View style={styles.intro}>
-            <Ionicons name="flask" size={22} color={colors.warning} />
-            <Text style={[type.caption, styles.introText]}>
-              Everything below controls simulated data only. Portfolio total is currently{' '}
-              {formatUsd(totalUsd)}.
-            </Text>
-          </View>
-
-          <SectionHeader title="Token balances" />
+          <SectionHeader title="Asset balances" />
           <Card style={styles.card}>
             {rows.map((row, index) => (
               <View key={row.token.id}>
@@ -142,7 +130,7 @@ export default function DemoSettings() {
           <SectionHeader title="Cash balance" />
           <Card style={styles.card}>
             <View style={styles.cashRow}>
-              <Text style={type.body}>Simulated cash</Text>
+              <Text style={type.body}>Cash</Text>
               <View style={styles.cashInputWrap}>
                 <Text style={type.body}>$</Text>
                 <TextInput
@@ -156,7 +144,7 @@ export default function DemoSettings() {
             </View>
           </Card>
 
-          <SectionHeader title="Add a custom token" />
+          <SectionHeader title="Add a custom asset" />
           <Card style={[styles.card, styles.addCard]}>
             <LabelledInput
               label="Name"
@@ -200,35 +188,17 @@ export default function DemoSettings() {
             </View>
 
             <Text style={[type.small, styles.hint]}>
-              Custom tokens have no market data, so they are valued at a flat $1.00.
+Custom assets have no market data, so they are valued at a flat $1.00.
             </Text>
 
-            <Button label="Add token" disabled={!canAdd} onPress={handleAdd} />
-          </Card>
-
-          <SectionHeader title="Display" />
-          <Card style={styles.card}>
-            <View style={styles.switchRow}>
-              <View style={styles.switchText}>
-                <Text style={type.body}>DEMO FUNDS banner</Text>
-                <Text style={[type.caption, styles.switchSub]}>
-                  Shows a warning strip at the top of Home
-                </Text>
-              </View>
-              <Switch
-                value={showDemoBanner}
-                onValueChange={setShowDemoBanner}
-                trackColor={{ false: colors.surfacePressed, true: colors.accentDeep }}
-                thumbColor={colors.text}
-              />
-            </View>
+            <Button label="Add asset" disabled={!canAdd} onPress={handleAdd} />
           </Card>
 
           <SectionHeader title="Danger zone" />
           <Card style={styles.card}>
             <View style={styles.resetBlock}>
               <Text style={[type.caption, styles.resetBlurb]}>
-                Restore factory demo data: default balances, a fresh activity history, new
+Restore factory contents: default balances, a fresh activity history, new
                 addresses and a new recovery phrase.
               </Text>
               <Button label="Reset all data" variant="secondary" onPress={handleReset} />
@@ -236,7 +206,7 @@ export default function DemoSettings() {
           </Card>
 
           {/* Permanent labelling - not removable from this panel. */}
-          <DemoNotice style={styles.notice} />
+          <DemoNotice />
         </ScrollView>
       </KeyboardAvoidingView>
     </Screen>
@@ -281,7 +251,12 @@ function BalanceEditor({
         selectTextOnFocus
       />
       {onRemove ? (
-        <PressScale onPress={onRemove} style={styles.removeButton}>
+        <PressScale
+          onPress={onRemove}
+          accessibilityRole="button"
+          accessibilityLabel="Remove asset"
+          style={styles.removeButton}
+        >
           <Ionicons name="trash-outline" size={18} color={colors.negative} />
         </PressScale>
       ) : null}

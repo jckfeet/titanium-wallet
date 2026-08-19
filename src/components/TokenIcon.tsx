@@ -150,7 +150,7 @@ const styles = StyleSheet.create({
     left: 0,
   },
   glyph: {
-    fontWeight: '800',
+    fontWeight: '700',
     textAlign: 'center',
   },
   verified: {

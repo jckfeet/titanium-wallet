@@ -41,7 +41,7 @@ export default function CreateWallet() {
       >
         <Text style={[type.title, styles.heading]}>Your secret recovery phrase</Text>
         <Text style={[type.caption, styles.blurb]}>
-          In a real wallet these twelve words restore access to your funds. In Titanium they are
+In a real wallet these twelve words restore access to your funds. In Photon they are
           generated for illustration only - nothing is derived from them and there is nothing to
           lose.
         </Text>
@@ -55,7 +55,12 @@ export default function CreateWallet() {
           ))}
         </Card>
 
-        <PressScale onPress={handleCopy} style={styles.copyButton}>
+        <PressScale
+          onPress={handleCopy}
+          accessibilityRole="button"
+          accessibilityLabel="Copy recovery phrase"
+          style={styles.copyButton}
+        >
           <Ionicons
             name={copied ? 'checkmark-circle' : 'copy-outline'}
             size={18}

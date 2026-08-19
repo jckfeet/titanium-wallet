@@ -1,9 +1,10 @@
 /**
  * Generates the Titanium app icons.
  *
- * The mark is an original construction: a faceted octagon ("ingot") filled with
- * a diagonal violet gradient, carrying a negative-space T. Everything here is
- * drawn from geometry in this file - no third-party artwork is used or traced.
+ * The mark is a flat disc carrying a negative-space P - stem, bowl and a
+ * counter punched back out - matching src/components/Logo.tsx exactly, so the
+ * home-screen icon and the in-app mark are the same shape. Built from the
+ * parameters below rather than traced from any existing artwork.
  *
  * Run: node tools/gen-icons.mjs
  */
@@ -44,7 +45,6 @@ function encodePng(width, height, rgba) {
   ihdr.writeUInt32BE(height, 4);
   ihdr[8] = 8; // bit depth
   ihdr[9] = 6; // colour type: RGBA
-  // 10..12 = compression, filter, interlace, all zero.
 
   // One filter byte (0 = None) per scanline.
   const raw = Buffer.alloc(height * (width * 4 + 1));
@@ -73,116 +73,107 @@ const hex = (h) => [
 
 const lerp = (a, b, t) => a + (b - a) * t;
 
-/** Regular octagon, flat side up, inscribed in a circle of radius r. */
-function octagonVertices(cx, cy, r) {
-  const pts = [];
-  for (let i = 0; i < 8; i++) {
-    const angle = (Math.PI / 8) * (2 * i + 1);
-    pts.push([cx + r * Math.cos(angle), cy + r * Math.sin(angle)]);
-  }
-  return pts;
-}
+/**
+ * Coverage test for the mark at one point.
+ *
+ * Mirrors the geometry in src/components/Logo.tsx: a disc of radius r, with a
+ * P cut out of it. Returns 0 outside the disc, 1 on the disc body, and -1 on
+ * the cut-out glyph, so the caller can paint three ways from one test.
+ */
+function markAt(x, y, cx, cy, r) {
+  const dx = x - cx;
+  const dy = y - cy;
+  if (dx * dx + dy * dy > r * r) return 0;
 
-function pointInPolygon(x, y, pts) {
-  let inside = false;
-  for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
-    const [xi, yi] = pts[i];
-    const [xj, yj] = pts[j];
-    if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) inside = !inside;
-  }
-  return inside;
-}
+  const stemW = 0.17 * r;
+  const stemX = cx - 0.30 * r;
+  const top = cy - 0.52 * r;
+  const stemH = 1.04 * r;
+  const bowlOuter = 0.37 * r;
+  const bowlInner = 0.20 * r;
+  const bowlCx = stemX + stemW;
+  const bowlCy = top + bowlOuter;
 
-/** Axis-aligned rectangle with rounded corners. */
-function pointInRoundRect(x, y, left, top, right, bottom, radius) {
-  if (x < left || x > right || y < top || y > bottom) return false;
-  const nx = Math.max(left + radius - x, 0, x - (right - radius));
-  const ny = Math.max(top + radius - y, 0, y - (bottom - radius));
-  return nx * nx + ny * ny <= radius * radius;
+  if (x >= stemX && x <= stemX + stemW && y >= top && y <= top + stemH) return -1;
+
+  // The bowl is clipped to the stem's left edge. Without this the ring wraps
+  // around both sides of the stem and the glyph reads as a phi, not a P.
+  if (x >= stemX) {
+    const bx = x - bowlCx;
+    const by = y - bowlCy;
+    const bd2 = bx * bx + by * by;
+    if (bd2 <= bowlOuter * bowlOuter && bd2 > bowlInner * bowlInner) return -1;
+  }
+
+  return 1;
 }
 
 /**
  * Renders the mark.
  *
- * @param size      output edge length in pixels
- * @param opts.background  canvas fill, or null for transparent
- * @param opts.scale       mark radius as a fraction of the canvas
- * @param opts.monochrome  render a flat white mark (Android monochrome icon)
+ * @param size            output edge length in pixels
+ * @param opts.background canvas fill, or null for transparent
+ * @param opts.disc       disc fill; a two-stop vertical gradient
+ * @param opts.cutout     colour showing through the negative-space P
+ * @param opts.scale      disc radius as a fraction of the canvas
  */
-function renderMark(size, { background = null, scale = 0.38, monochrome = false } = {}) {
+function renderMark(
+  size,
+  { background = null, disc = ['#FFFFFF', '#EDE7FF'], cutout = '#000000', scale = 0.38 } = {},
+) {
   const rgba = Buffer.alloc(size * size * 4, 0);
   const cx = size / 2;
   const cy = size / 2;
   const r = size * scale;
-  const octagon = octagonVertices(cx, cy, r);
 
-  const gradTop = hex('#C6BBFF');
-  const gradBottom = hex('#7C63D8');
   const bg = background ? hex(background) : null;
+  const top = hex(disc[0]);
+  const bottom = hex(disc[1]);
+  const cut = hex(cutout);
 
-  // The T is a union of a horizontal bar and a vertical stem, sized against r
-  // so the mark scales cleanly to any canvas.
-  const barLeft = cx - 0.54 * r;
-  const barRight = cx + 0.54 * r;
-  const barTop = cy - 0.48 * r;
-  const barBottom = cy - 0.17 * r;
-  const stemLeft = cx - 0.155 * r;
-  const stemRight = cx + 0.155 * r;
-  const stemBottom = cy + 0.54 * r;
-  const corner = 0.05 * r;
-
-  const inT = (x, y) =>
-    pointInRoundRect(x, y, barLeft, barTop, barRight, barBottom, corner) ||
-    pointInRoundRect(x, y, stemLeft, barTop, stemRight, stemBottom, corner);
-
-  const SS = 4; // 4x4 supersampling gives clean facet edges
+  const SS = 4; // 4x4 supersampling keeps the disc edge and the counter clean
   const step = 1 / SS;
 
   for (let py = 0; py < size; py++) {
     for (let px = 0; px < size; px++) {
-      let markHits = 0;
-      let cutHits = 0;
-      let gradAcc = 0;
-
+      let body = 0;
+      let glyph = 0;
       for (let sy = 0; sy < SS; sy++) {
         for (let sx = 0; sx < SS; sx++) {
-          const x = px + (sx + 0.5) * step;
-          const y = py + (sy + 0.5) * step;
-          if (!pointInPolygon(x, y, octagon)) continue;
-          if (inT(x, y)) {
-            cutHits++;
-            continue;
-          }
-          markHits++;
-          // Diagonal gradient: top-left light, bottom-right deep.
-          gradAcc += Math.min(1, Math.max(0, (x - (cx - r) + (y - (cy - r))) / (4 * r)));
+          const v = markAt(px + (sx + 0.5) * step, py + (sy + 0.5) * step, cx, cy, r);
+          if (v === 1) body++;
+          else if (v === -1) glyph++;
         }
       }
 
-      const samples = SS * SS;
-      const markCoverage = markHits / samples;
-      const cutCoverage = cutHits / samples;
+      const total = SS * SS;
+      const bodyCov = body / total;
+      const glyphCov = glyph / total;
       const idx = (py * size + px) * 4;
 
-      // Start from the canvas.
       let [rr, gg, bb] = bg ?? [0, 0, 0];
       let aa = bg ? 1 : 0;
 
-      // The cut-out shows the canvas through the mark, so on a transparent
-      // canvas it stays transparent - which is exactly what the splash and
-      // adaptive-icon foreground need.
-      if (markCoverage > 0) {
-        const t = gradAcc / Math.max(markHits, 1);
-        const mr = monochrome ? 255 : lerp(gradTop[0], gradBottom[0], t);
-        const mg = monochrome ? 255 : lerp(gradTop[1], gradBottom[1], t);
-        const mb = monochrome ? 255 : lerp(gradTop[2], gradBottom[2], t);
-        const outA = aa + markCoverage * (1 - aa);
-        rr = (mr * markCoverage + rr * aa * (1 - markCoverage)) / (outA || 1);
-        gg = (mg * markCoverage + gg * aa * (1 - markCoverage)) / (outA || 1);
-        bb = (mb * markCoverage + bb * aa * (1 - markCoverage)) / (outA || 1);
+      // Disc body first, shaded top-to-bottom, then the glyph over it.
+      if (bodyCov > 0) {
+        const t = Math.min(1, Math.max(0, (py - (cy - r)) / (2 * r)));
+        const sr = lerp(top[0], bottom[0], t);
+        const sg = lerp(top[1], bottom[1], t);
+        const sb = lerp(top[2], bottom[2], t);
+        const outA = aa + bodyCov * (1 - aa);
+        rr = (sr * bodyCov + rr * aa * (1 - bodyCov)) / (outA || 1);
+        gg = (sg * bodyCov + gg * aa * (1 - bodyCov)) / (outA || 1);
+        bb = (sb * bodyCov + bb * aa * (1 - bodyCov)) / (outA || 1);
         aa = outA;
       }
-      void cutCoverage;
+
+      if (glyphCov > 0) {
+        const outA = aa + glyphCov * (1 - aa);
+        rr = (cut[0] * glyphCov + rr * aa * (1 - glyphCov)) / (outA || 1);
+        gg = (cut[1] * glyphCov + gg * aa * (1 - glyphCov)) / (outA || 1);
+        bb = (cut[2] * glyphCov + bb * aa * (1 - glyphCov)) / (outA || 1);
+        aa = outA;
+      }
 
       rgba[idx] = Math.round(Math.min(255, Math.max(0, rr)));
       rgba[idx + 1] = Math.round(Math.min(255, Math.max(0, gg)));
@@ -196,18 +187,21 @@ function renderMark(size, { background = null, scale = 0.38, monochrome = false 
 
 // --------------------------------------------------------------------- output
 
+const LAVENDER = '#AB9FF2';
+const BLACK = '#000000';
+
 const out = (name, buf) => {
   writeFileSync(new URL(`../assets/${name}`, import.meta.url), buf);
   console.log(`  assets/${name}  ${(buf.length / 1024).toFixed(1)} KB`);
 };
 
-console.log('Rendering Titanium icons...');
-// iOS icons must be opaque; the system applies its own corner mask.
-out('icon.png', renderMark(1024, { background: '#131313', scale: 0.36 }));
-// Splash and adaptive foreground sit on the themed background colour.
-out('splash-icon.png', renderMark(512, { background: null, scale: 0.42 }));
-// Android adaptive foregrounds need the mark inside the ~66% safe zone.
-out('android-icon-foreground.png', renderMark(1024, { background: null, scale: 0.26 }));
-out('android-icon-monochrome.png', renderMark(1024, { background: null, scale: 0.26, monochrome: true }));
-out('favicon.png', renderMark(64, { background: '#131313', scale: 0.36 }));
+console.log('Rendering Photon icons...');
+// iOS icons must be opaque; the system applies its own squircle mask.
+out('icon.png', renderMark(1024, { background: BLACK, disc: [LAVENDER, '#8E7BF0'], cutout: BLACK, scale: 0.34 }));
+// Splash and adaptive foreground sit on the black app background, so the disc
+// carries the accent colour instead of the plate.
+out('splash-icon.png', renderMark(512, { background: null, disc: [LAVENDER, '#8E7BF0'], cutout: BLACK, scale: 0.42 }));
+out('android-icon-foreground.png', renderMark(1024, { background: null, disc: [LAVENDER, '#8E7BF0'], cutout: BLACK, scale: 0.26 }));
+out('android-icon-monochrome.png', renderMark(1024, { background: null, disc: ['#FFFFFF', '#FFFFFF'], cutout: BLACK, scale: 0.26 }));
+out('favicon.png', renderMark(64, { background: BLACK, disc: [LAVENDER, '#8E7BF0'], cutout: BLACK, scale: 0.34 }));
 console.log('Done.');

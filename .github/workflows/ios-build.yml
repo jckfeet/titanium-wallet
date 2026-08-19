@@ -1,6 +1,6 @@
 name: Build unsigned iOS IPA
 
-# Titanium ships as an unsigned .ipa: there is no paid Apple Developer account
+# Photon ships as an unsigned .ipa: there is no paid Apple Developer account
 # behind this repo, so the archive is built with code signing switched off and
 # the user signs it locally with Sideloadly (see README).
 
@@ -15,7 +15,7 @@ permissions:
 
 env:
   # Must match the iOS project name expo prebuild derives from `name` in app.json.
-  APP_NAME: Titanium
+  APP_NAME: Photon
 
 jobs:
   build:
@@ -102,16 +102,16 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: build/${{ env.APP_NAME }}.ipa
-          name: Titanium ${{ github.ref_name }}
+          name: Photon ${{ github.ref_name }}
           generate_release_notes: true
           body: |
-            **Titanium ${{ github.ref_name }}** - unsigned iOS build.
+            **Photon ${{ github.ref_name }}** - unsigned iOS build.
 
             This is a demo wallet. All balances are simulated, no blockchain is
             involved and no real funds exist anywhere in the app.
 
             ### Installing on iPhone from Windows
-            1. Download `Titanium.ipa` below.
+            1. Download `Photon.ipa` below.
             2. Install [Sideloadly](https://sideloadly.io) and connect your iPhone.
             3. Drop the `.ipa` in, sign in with a free Apple ID, and hit Start.
             4. On the phone: Settings > General > VPN & Device Management > trust your developer certificate.
@@ -125,7 +125,7 @@ jobs:
         with:
           files: build/${{ env.APP_NAME }}.ipa
           tag_name: build-${{ github.run_number }}
-          name: Titanium manual build ${{ github.run_number }}
+          name: Photon manual build ${{ github.run_number }}
           prerelease: true
           body: |
             Unsigned iOS build from a manual workflow run (#${{ github.run_number }}),
