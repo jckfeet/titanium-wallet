@@ -34,7 +34,7 @@ export default function Collectibles() {
           label="Explore dApps"
           variant="secondary"
           style={styles.cta}
-          onPress={() => router.push('/(tabs)/explore')}
+          onPress={() => router.navigate('/(tabs)/explore')}
         />
       </View>
 

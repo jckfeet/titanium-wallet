@@ -130,7 +130,7 @@ export default function Home() {
             icon="swap-horizontal"
             label="Swap"
             emphasis
-            onPress={() => router.push('/(tabs)/swap')}
+            onPress={() => router.navigate('/(tabs)/swap')}
           />
           <CircleAction icon="card-outline" label="Buy" onPress={() => router.push('/buy')} />
         </View>

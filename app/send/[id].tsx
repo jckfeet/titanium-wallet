@@ -214,7 +214,10 @@ export default function SendCompose() {
         amount={formatAmount(amount)}
         onDone={() => {
           setSent(false);
-          router.dismissAll();
+          // The send flow may be reached as a modal (from Home) or pushed
+          // directly, so only dismiss when there is actually a modal to close.
+          if (router.canDismiss()) router.dismissAll();
+          else router.replace('/(tabs)');
         }}
       />
     </Screen>

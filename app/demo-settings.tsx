@@ -81,7 +81,8 @@ export default function DemoSettings() {
           style: 'destructive',
           onPress: () => {
             resetAll();
-            router.dismissAll();
+            // Reached either as a push from Home or from the Settings modal.
+            if (router.canDismiss()) router.dismissAll();
             router.replace('/onboarding');
           },
         },

@@ -29,7 +29,7 @@ export default function Explore() {
     );
   }, [query]);
 
-  const renderDapp = (dapp: Dapp, index: number, total: number) => (
+  const renderDapp = (dapp: Dapp, index: number) => (
     <View key={dapp.id}>
       {index > 0 ? <Separator inset={68} /> : null}
       <ListRow
@@ -39,7 +39,6 @@ export default function Explore() {
         chevron
         onPress={() => setSelected(dapp)}
       />
-      {index === total - 1 ? null : null}
     </View>
   );
 
@@ -85,7 +84,7 @@ export default function Explore() {
                   <Text style={type.caption}>Nothing matched “{query.trim()}”.</Text>
                 </View>
               ) : (
-                results.map((dapp, i) => renderDapp(dapp, i, results.length))
+                results.map((dapp, i) => renderDapp(dapp, i))
               )}
             </Card>
           </>
@@ -94,7 +93,7 @@ export default function Explore() {
             <View key={section.title}>
               <SectionHeader title={section.title} />
               <Card style={styles.card}>
-                {section.items.map((dapp, i) => renderDapp(dapp, i, section.items.length))}
+                {section.items.map((dapp, i) => renderDapp(dapp, i))}
               </Card>
             </View>
           ))
