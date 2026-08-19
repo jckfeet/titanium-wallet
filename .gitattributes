@@ -1,0 +1,7 @@
+# The CI build runs on macOS. Normalise to LF so shell blocks inside the
+# workflow never reach bash with carriage returns attached.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.ttf binary
