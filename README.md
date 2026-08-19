@@ -16,11 +16,18 @@ demonstrate wallet UI/UX safely.
 
 ## Features
 
+**Navigation**
+- Segmented pill bar at the top: **Home / Trade / Explore**
+- Persistent search field and a primary action button pinned to the bottom
+- Account sheet (tap `Account 1`) for Collectibles, Activity, asset list and Settings
+
 **Portfolio**
-- Total USD balance with a weighted 24h change, and pull-to-refresh
-- Token list (SOL, USDC, BONK, JUP, RAY, JTO, PYTH) with balances, USD values and 24h moves
-- Simulated cash balance section
-- Manage token list - hide or show any token without losing its balance
+- Total USD balance with a weighted 24h change shown as a coloured pill, and pull-to-refresh
+- **Tokens**: ETH, SOL, USDT, BTC, SUI, MATIC, USDC, BONK, JUP, RAY
+- **Stocks**: AAPL, NVDA, TSLA, MSFT, SPY - tokenised equities priced from a separate provider
+- Real issuer logos with verification ticks, falling back to a generated badge when offline
+- Simulated cash balance card
+- Manage asset list - hide or show anything without losing its balance
 
 **Token detail**
 - Interactive price chart with a draggable scrubber
@@ -61,7 +68,9 @@ deliberately not removable.
 
 | Concern | Approach |
 | --- | --- |
-| Prices | Real USD quotes from CoinGecko's free public API, cached 60s, with a bundled static table as an offline fallback. Fake balances multiplied by real prices give plausible totals. |
+| Crypto prices | Real USD quotes from CoinGecko's free public API, cached 60s, with a bundled static table as an offline fallback. Fake balances multiplied by real prices give plausible totals. |
+| Stock prices | Yahoo Finance's public chart endpoint, one request per ticker, same 60s cache and fallback. A failure in one provider never blanks out the other section. |
+| Logos | Loaded at runtime from the issuers (CoinGecko for tokens, Financial Modeling Prep for equities) rather than bundled. Any image that fails to load falls back to a generated colour-and-letter badge, so the list still renders offline. |
 | Charts | Seeded random walk per `token:timeframe`, so the curve is identical every time you open a screen. Rescaled to end at the live price, and the 1D series is anchored to the real 24h change. |
 | Addresses | Random strings in the correct alphabet and length: base58 43-44 chars for Solana, `0x` + 40 hex for EVM, bech32-shaped for Bitcoin. Generated once and persisted. |
 | Signatures | Random base58, 87-88 chars, matching Solana's shape. |
@@ -151,15 +160,16 @@ A free Apple ID is also limited to 3 sideloaded apps at a time and 10 app IDs pe
 
 ```
 app/                     Expo Router routes (file-based)
-  (tabs)/                Home, Collectibles, Swap, Activity, Explore
+  (main)/                Chrome + Home, Trade, Explore
   onboarding/            Welcome and recovery-phrase screens
-  token/[id].tsx         Token detail with chart
+  token/[id].tsx         Asset detail with chart
   send/                  Token picker and compose/review/success
-  receive.tsx  buy.tsx  settings.tsx  demo-settings.tsx  manage-tokens.tsx
+  collectibles.tsx  activity.tsx  receive.tsx  buy.tsx
+  settings.tsx  demo-settings.tsx  manage-tokens.tsx
 src/
   components/            Screen, Card, buttons, rows, chart, token badges, logo
   data/                  Token catalogue, dApp directory, BIP-39 wordlist
-  lib/                   Formatting, seeded RNG, base58, chart series, price API
+  lib/                   Formatting, seeded RNG, base58, chart series, price APIs
   store/                 Zustand stores: wallet, prices, portfolio selectors
   theme/                 Colours, radii, spacing, type scale
 tools/                   Asset and wordlist generators
@@ -167,12 +177,16 @@ tools/                   Asset and wordlist generators
 
 ## Branding
 
-The name, the octagon mark and every icon in this repo are original. The app
-icons are generated procedurally by `tools/gen-icons.mjs` - a faceted octagon
-with a negative-space "T" - and token badges are drawn from each token's colour
-and first letter rather than bundling any third-party logo files. No other
-wallet's name, logo, artwork or copy appears anywhere in the app, repo or
-metadata.
+**Titanium's own branding is original.** The name and the octagon mark are mine;
+the app icons are generated procedurally by `tools/gen-icons.mjs` - a faceted
+octagon with a negative-space "T". No other wallet's name, logo, artwork or copy
+appears anywhere in the app, repo or metadata.
+
+**Asset logos belong to their issuers.** Token and company marks are referenced
+by URL and fetched at runtime for identification purposes, exactly as any
+portfolio app does; none are redistributed in this repository. They remain the
+property of their respective owners, and the generated badge fallback means the
+app is fully functional without them.
 
 ## Licence
 

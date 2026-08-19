@@ -6,5 +6,5 @@ import { useWallet } from '@/store/wallet';
 
 export default function Index() {
   const onboarded = useWallet((s) => s.onboarded);
-  return <Redirect href={onboarded ? '/(tabs)' : '/onboarding'} />;
+  return <Redirect href={onboarded ? '/(main)' : '/onboarding'} />;
 }

@@ -30,7 +30,7 @@ export default function CreateWallet() {
 
   const handleContinue = () => {
     createWallet();
-    router.replace('/(tabs)');
+    router.replace('/(main)');
   };
 
   return (

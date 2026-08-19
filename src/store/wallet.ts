@@ -11,7 +11,7 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
 import { BIP39_WORDLIST } from '@/data/bip39';
-import { DEFAULT_TOKENS, FALLBACK_PRICES, Token } from '@/data/tokens';
+import { DEFAULT_TOKENS, Token } from '@/data/tokens';
 import {
   fakeBitcoinAddress,
   fakeEvmAddress,
@@ -135,7 +135,10 @@ function seedActivity(seed: string, now = Date.now()): ActivityItem[] {
   for (let i = 0; i < 16; i++) {
     const type = rngPick(rng, types);
     const token = rngPick(rng, DEFAULT_TOKENS);
-    const price = FALLBACK_PRICES[token.id]?.usd ?? 1;
+    // Read the price off the asset itself: the shared fallback table is keyed
+    // by CoinGecko id for crypto but by ticker for stocks, so an id lookup
+    // silently misses every stock and produces absurd share counts.
+    const price = token.fallbackPrice > 0 ? token.fallbackPrice : 1;
 
     // Size the amount against price so USD values land in a believable band.
     const usdTarget = rngRange(rng, 12, 640);
@@ -160,7 +163,7 @@ function seedActivity(seed: string, now = Date.now()): ActivityItem[] {
         rng,
         tradable.filter((t) => t.id !== token.id),
       );
-      const destPrice = FALLBACK_PRICES[dest.id]?.usd ?? 1;
+      const destPrice = dest.fallbackPrice > 0 ? dest.fallbackPrice : 1;
       item.toTokenId = dest.id;
       // Apply a small spread so the two legs are not a perfect mirror.
       item.toAmount = (usdTarget * rngRange(rng, 0.994, 0.999)) / destPrice;
@@ -183,7 +186,7 @@ function factoryState(seed = randomId()) {
     balances: defaultBalances(),
     hiddenTokens: [] as string[],
     activity: seedActivity(seed),
-    cashBalance: 128.44,
+    cashBalance: 10_000,
     showDemoBanner: true,
   };
 }
@@ -211,6 +214,9 @@ export const useWallet = create<WalletState>()(
           id,
           symbol: symbol.toUpperCase(),
           name,
+          // Custom tokens are always treated as crypto; they have no market
+          // either way, so they price at a flat nominal value.
+          kind: 'crypto',
           coingeckoId: null,
           color,
           glyph: symbol.slice(0, 1).toUpperCase(),
@@ -315,7 +321,7 @@ export const useWallet = create<WalletState>()(
       },
     }),
     {
-      name: 'titanium-wallet-v1',
+      name: 'titanium-wallet-v2',
       storage: createJSONStorage(() => AsyncStorage),
       partialize: ({ hydrated: _hydrated, ...rest }) => rest,
       onRehydrateStorage: () => (state) => {

@@ -10,7 +10,7 @@ import React, { useMemo, useState } from 'react';
 import { Modal, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { TokenIcon } from '@/components/TokenIcon';
-import { Button, Card, ListRow, Screen, SectionHeader, Separator } from '@/components/ui';
+import { Button, Card, ListRow, SectionHeader, Separator } from '@/components/ui';
 import { ALL_DAPPS, Dapp, DAPP_SECTIONS } from '@/data/dapps';
 import { colors, radius, spacing, type } from '@/theme';
 
@@ -43,11 +43,7 @@ export default function Explore() {
   );
 
   return (
-    <Screen>
-      <View style={styles.header}>
-        <Text style={type.title}>Explore</Text>
-      </View>
-
+    <View style={styles.flex}>
       <View style={styles.searchWrap}>
         <Ionicons name="search" size={18} color={colors.textTertiary} />
         <TextInput
@@ -129,20 +125,18 @@ export default function Explore() {
           </View>
         </View>
       </Modal>
-    </Screen>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  header: {
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-  },
+  flex: { flex: 1 },
   searchWrap: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
     marginHorizontal: spacing.lg,
+    marginTop: spacing.sm,
     paddingHorizontal: spacing.md,
     height: 44,
     borderRadius: radius.md,

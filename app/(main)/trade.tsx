@@ -20,7 +20,7 @@ import {
 
 import { TokenIcon } from '@/components/TokenIcon';
 import { TokenPickerModal } from '@/components/TokenPickerModal';
-import { Button, Card, DemoNotice, PressScale, Screen } from '@/components/ui';
+import { Button, Card, DemoNotice, PressScale } from '@/components/ui';
 import { formatAmount, formatPrice, formatUsd, parseAmount } from '@/lib/format';
 import { usePortfolio } from '@/store/portfolio';
 import { useRefreshPrices } from '@/store/prices';
@@ -86,7 +86,7 @@ export default function Swap() {
   }, [fromRow, toRow, rate]);
 
   return (
-    <Screen>
+    <View style={styles.flex}>
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -96,10 +96,6 @@ export default function Swap() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <View style={styles.header}>
-            <Text style={type.title}>Swap</Text>
-          </View>
-
           {/* From panel */}
           <Card style={styles.panel}>
             <View style={styles.panelHead}>
@@ -274,7 +270,7 @@ export default function Swap() {
           </View>
         </View>
       </Modal>
-    </Screen>
+    </View>
   );
 }
 

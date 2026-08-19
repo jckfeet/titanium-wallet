@@ -47,7 +47,9 @@ export default function RootLayout() {
             name="onboarding/create"
             options={{ title: 'Secret Recovery Phrase', headerBackTitle: 'Back' }}
           />
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="(main)" options={{ headerShown: false }} />
+          <Stack.Screen name="collectibles" options={{ title: 'Collectibles' }} />
+          <Stack.Screen name="activity" options={{ title: 'Activity' }} />
           <Stack.Screen name="token/[id]" options={{ title: '' }} />
           <Stack.Screen name="send/index" options={{ title: 'Send', presentation: 'modal' }} />
           <Stack.Screen name="send/[id]" options={{ title: 'Send' }} />

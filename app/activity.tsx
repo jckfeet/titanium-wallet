@@ -42,11 +42,7 @@ export default function Activity() {
   const selectedToToken = selected?.toTokenId ? tokenById[selected.toTokenId] : undefined;
 
   return (
-    <Screen>
-      <View style={styles.header}>
-        <Text style={type.title}>Activity</Text>
-      </View>
-
+    <Screen edges={['bottom']}>
       {activity.length === 0 ? (
         <View style={styles.empty}>
           <Ionicons name="time-outline" size={40} color={colors.textTertiary} />

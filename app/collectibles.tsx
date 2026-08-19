@@ -16,11 +16,7 @@ export default function Collectibles() {
   const router = useRouter();
 
   return (
-    <Screen>
-      <View style={styles.header}>
-        <Text style={type.title}>Collectibles</Text>
-      </View>
-
+    <Screen edges={['bottom']}>
       <View style={styles.body}>
         <View style={styles.iconWrap}>
           <Ionicons name="images-outline" size={40} color={colors.textTertiary} />
@@ -34,7 +30,7 @@ export default function Collectibles() {
           label="Explore dApps"
           variant="secondary"
           style={styles.cta}
-          onPress={() => router.navigate('/(tabs)/explore')}
+          onPress={() => router.navigate('/(main)/explore')}
         />
       </View>
 
