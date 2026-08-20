@@ -138,7 +138,15 @@ export default function Home() {
           style={styles.balanceBlock}
         >
           <View style={styles.balanceRow}>
-            <Text style={styles.balance}>{money(totalUsd)}</Text>
+            <Text
+              style={styles.balance}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.6}
+              maxFontSizeMultiplier={1.3}
+            >
+              {money(totalUsd)}
+            </Text>
             <PressScale
               onPress={() => setHideBalances(!hideBalances)}
               scaleTo={0.9}
@@ -154,20 +162,14 @@ export default function Home() {
             </PressScale>
           </View>
           <View style={styles.changeRow}>
-            <Text style={[styles.changeAmount, { color: positive ? colors.positive : colors.negative }]}>
-              {hideBalances ? MASKED : `${positive ? '+' : '-'}${money(Math.abs(change24hUsd))}`}
-            </Text>
-            <View
-              style={[
-                styles.changePill,
-                { backgroundColor: positive ? 'rgba(33,197,119,0.16)' : 'rgba(252,107,107,0.16)' },
-              ]}
+            <Text
+              style={[styles.changeAmount, { color: positive ? colors.positive : colors.negative }]}
+              numberOfLines={1}
             >
-              <Text style={[styles.changePillText, { color: positive ? colors.positive : colors.negative }]}>
-                {positive ? '+' : ''}
-                {change24hPct.toFixed(2)}%
-              </Text>
-            </View>
+              {hideBalances
+                ? MASKED
+                : `${positive ? '+' : '-'}${money(Math.abs(change24hUsd))}  ·  ${positive ? '+' : ''}${change24hPct.toFixed(2)}%`}
+            </Text>
           </View>
           {offline ? <Text style={styles.offline}>Offline - showing bundled prices</Text> : null}
         </PressScale>
@@ -175,7 +177,7 @@ export default function Home() {
         <PriceChart
           series={series}
           color={positive ? colors.positive : colors.negative}
-          height={140}
+          height={120}
         />
 
         <View style={styles.timeframes}>
@@ -193,7 +195,7 @@ export default function Home() {
                 <Text
                   style={[
                     type.small,
-                    { color: active ? colors.bg : colors.textSecondary, fontWeight: '700' },
+                    { color: active ? colors.text : colors.textTertiary, fontWeight: '600' },
                   ]}
                 >
                   {tf}
@@ -366,7 +368,7 @@ function AccountSheet({ visible, onClose }: { visible: boolean; onClose: () => v
 
 const styles = StyleSheet.create({
   content: {
-    paddingBottom: spacing.xxl,
+    paddingBottom: spacing.xxxl,
   },
   accountRow: {
     flexDirection: 'row',
@@ -408,16 +410,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     gap: spacing.sm,
-    paddingTop: spacing.md,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.lg,
   },
   timeframeChip: {
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.md,
     borderRadius: radius.sm,
-    backgroundColor: colors.surface,
   },
   timeframeChipActive: {
-    backgroundColor: colors.accent,
+    backgroundColor: colors.surfaceHigh,
   },
   balanceRow: {
     flexDirection: 'row',
@@ -430,9 +432,12 @@ const styles = StyleSheet.create({
   balanceBlock: {
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.sm,
-    paddingBottom: spacing.xl,
+    paddingBottom: spacing.md,
   },
   balance: {
+    // flexShrink lets a long figure - ¥ or ₦ totals run to eight digits -
+    // give way instead of pushing the eye button past the screen edge.
+    flexShrink: 1,
     color: colors.text,
     fontSize: 40,
     lineHeight: 48,
@@ -449,15 +454,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
   },
-  changePill: {
-    paddingVertical: 2,
-    paddingHorizontal: spacing.sm,
-    borderRadius: radius.sm,
-  },
-  changePillText: {
-    fontSize: 13,
-    fontWeight: '700',
-  },
   offline: {
     color: colors.textTertiary,
     fontSize: 12,
@@ -466,6 +462,7 @@ const styles = StyleSheet.create({
 
   cashCard: {
     marginHorizontal: spacing.lg,
+    marginTop: spacing.sm,
   },
   cashRow: {
     flexDirection: 'row',
